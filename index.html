@@ -4,134 +4,190 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
-<title>Carnet de course</title>
-<meta name="description" content="Dépose ton export de l'app Santé de l'iPhone et obtiens l'analyse détaillée de tes sorties de course. Le fichier est lu dans ton navigateur, rien n'est envoyé.">
-<meta name="theme-color" content="#0f161d">
+<title>Runbook</title>
+<meta name="description" content="Tableau de bord santé, activité, nutrition et course à pied à partir de l'export de l'app Santé de l'iPhone. Tout est lu et gardé sur ton appareil, rien n'est envoyé.">
+<meta name="theme-color" content="#070b14">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Carnet de course">
+<meta name="apple-mobile-web-app-title" content="Runbook">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-180.png">
 <style>
-/* Layout: one phone-width column (max 560px), sticky tabs, stacked cards. UI in ink, color reserved for data. No external resource. */
-:root{
-  --bg:#f1f4f6; --card:#ffffff; --ink:#0f161d; --ink2:#55616d; --ink3:#8793a0; --line:#dde3e8; --hero:#0f161d; --hero-ink:#f4f7f9; --hero-ink2:#a9b5c0;
-  --pace:#2a78d6; --hr:#e34948; --pow:#1baf7a; --ele:#9aa5b0; --runA:#2a78d6; --runB:#eb6834;
-  --q1:#9ec5f4; --q2:#6da7ec; --q3:#3987e5; --q4:#256abf; --q5:#104281;
-  --display:"Avenir Next Condensed","Roboto Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif; --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ color-scheme:dark;
-    --bg:#0d1217; --card:#171f27; --ink:#eef2f5; --ink2:#a7b2be; --ink3:#77838f; --line:#2a3541; --hero:#1f2a35; --hero-ink:#f4f7f9; --hero-ink2:#a9b5c0;
-    --pace:#3987e5; --hr:#e66767; --pow:#199e70; --ele:#5d6975; --runA:#3987e5; --runB:#d95926;
-    --q1:#184f95; --q2:#256abf; --q3:#3987e5; --q4:#6da7ec; --q5:#b7d3f6; }
-}
-:root[data-theme="dark"]{ color-scheme:dark;
-  --bg:#0d1217; --card:#171f27; --ink:#eef2f5; --ink2:#a7b2be; --ink3:#77838f; --line:#2a3541; --hero:#1f2a35; --hero-ink:#f4f7f9; --hero-ink2:#a9b5c0;
+/* Layout: left sidebar + header (eyebrow, title, status pills) + KPI row + card grid. One dark theme by choice; lime accent for navigation and actions, one hue per category for data. No external resource. */
+:root{ color-scheme:dark;
+  --bg:#070b14; --side:#090e1a; --card:#0c1322; --card2:#111a2d; --ink:#f2f5fa; --ink2:#9aa6ba; --ink3:#66728a; --line:#1b2538; --acc:#c8f23a; --acc-ink:#0c1203; --warn:#ff8a4c;
+  --hero:#111a2d; --hero-ink:#f2f5fa; --hero-ink2:#9aa6ba;
   --pace:#3987e5; --hr:#e66767; --pow:#199e70; --ele:#5d6975; --runA:#3987e5; --runB:#d95926;
-  --q1:#184f95; --q2:#256abf; --q3:#3987e5; --q4:#6da7ec; --q5:#b7d3f6; }
+  --q1:#184f95; --q2:#256abf; --q3:#3987e5; --q4:#6da7ec; --q5:#b7d3f6;
+  --c-activite:#d95926; --c-coeur:#e66767; --c-mensurations:#9085e9; --c-mobilite:#199e70; --c-nutrition:#c98500; --c-respiration:#3987e5; --c-vitaux:#d55181; --c-course:#c8f23a;
+  --display:"Avenir Next","Segoe UI Semibold",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
 *{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
-.app{max-width:560px;margin:0 auto;padding:0 16px 48px}
-header.top{padding:20px 0 10px;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-h1{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:.01em;text-transform:uppercase;margin:0;line-height:1}
-.period{color:var(--ink2);font-size:13px;text-align:right}
-nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 -16px 16px;padding:0 16px}
-nav.tabs[hidden]{display:none}
-nav.tabs button{flex:1;font:600 17px var(--display);text-transform:uppercase;letter-spacing:.04em;color:var(--ink3);background:none;border:0;border-bottom:3px solid transparent;padding:12px 4px 9px;cursor:pointer}
-nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
-button:focus-visible,a:focus-visible,label:focus-within{outline:2px solid var(--pace);outline-offset:2px}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14.5px;line-height:1.45;-webkit-text-size-adjust:100%}
+button,input,select{font:inherit;color:inherit}
+.shell{display:grid;grid-template-columns:212px minmax(0,1fr);min-height:100%}
+.side{background:var(--side);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px;background:none;border:0;cursor:pointer;text-align:left}
+.brand b{font:700 17px var(--display);letter-spacing:.16em;display:block}
+.brand span span{color:var(--acc);font-weight:600;font-size:14px}
+.side nav{display:flex;flex-direction:column;gap:2px}
+.side nav button{display:flex;align-items:center;gap:9px;text-align:left;background:none;border:0;border-radius:9px;padding:9px 10px;color:var(--ink2);cursor:pointer;font-weight:500;white-space:nowrap}
+.side nav button i{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
+.side nav button:hover{color:var(--ink)}
+.side nav button[aria-current="page"]{background:var(--card2);color:var(--acc);font-weight:600}
+.side hr{border:0;border-top:1px solid var(--line);margin:6px 4px}
+.sidecard{border:1px solid var(--line);border-radius:12px;padding:12px;font-size:12.5px;color:var(--ink2)}
+.sidecard b{display:block;font:700 22px var(--display);color:var(--ink)}
+.wrap{padding:22px 26px 48px;max-width:1320px;min-width:0}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.eyebrow{font:600 11.5px var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--acc)}
+h1{font:700 28px/1.1 var(--display);margin:4px 0 0;text-wrap:balance}
+.pills{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pill{border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:500;background:var(--card);display:inline-flex;align-items:center;gap:7px}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--acc)}
+.pill.off i{background:var(--warn)}.pill.off{color:var(--warn)}
+.btn{display:inline-block;font:700 14px var(--body);background:var(--acc);color:var(--acc-ink);border:0;border-radius:10px;padding:10px 16px;cursor:pointer;text-align:center}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--ink3)}
+.btn.sm{padding:7px 11px;font-size:13px}
+.btn:hover{filter:brightness(1.08)}
+.btn[disabled]{opacity:.35;cursor:default}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,label:focus-within{outline:2px solid var(--acc);outline-offset:2px}
 main{display:flex;flex-direction:column;gap:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
-h2{font:600 19px var(--display);text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px;text-wrap:balance}
+main.col{max-width:660px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+h2{font:700 17px var(--display);margin:0 0 10px;text-wrap:balance}
+h3{font:600 12px var(--body);text-transform:uppercase;letter-spacing:.07em;color:var(--ink2);margin:14px 0 6px}
 .sub{color:var(--ink2);font-size:13px;margin:-6px 0 12px}
 .note{color:var(--ink2);font-size:13px;margin:10px 0 0}
-.num{font-family:var(--display);font-variant-numeric:tabular-nums;font-weight:600}
-.unit{font-family:var(--body);font-weight:500;font-size:.5em;color:inherit;opacity:.7;margin-left:3px}
-.hero{background:var(--hero);color:var(--hero-ink);border-radius:14px;padding:18px 16px 16px}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums;font-weight:700}
+.unit{font-family:var(--body);font-weight:500;font-size:.5em;color:var(--ink2);margin-left:4px}
+.lbl{font-size:12.5px;color:var(--ink2);font-weight:500}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink2);cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:700}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:12px}
+.two{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:14px}
+.mcard{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:end;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;min-width:0}
+.mcard:hover{border-color:var(--ink3)}
+.mcard .hdr{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.mcard .v{font:700 27px/1.15 var(--display);font-variant-numeric:tabular-nums}
+.mcard .v.none{color:var(--ink3);font-size:16px;font-weight:600}
+.mcard .d{grid-column:1/-1;font-size:12.5px;color:var(--ink2)}
+.mcard svg{display:block}
+.tag{font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--line);border-radius:5px;padding:1px 5px;white-space:nowrap}
+.tag.m{color:var(--acc);border-color:color-mix(in srgb,var(--acc) 40%,transparent)}
+.catcard{border-top:3px solid var(--c)}
+.empty{color:var(--ink2);border:1px dashed var(--line);border-radius:12px;padding:14px;font-size:13.5px}
+.hero{background:var(--hero);color:var(--hero-ink);border:1px solid var(--line);border-radius:14px;padding:18px 16px 16px}
 .hero .lbl{color:var(--hero-ink2)}
-.hero .big{font:700 64px/0.95 var(--display);font-variant-numeric:tabular-nums}
-.hero .row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;border-top:1px solid rgba(255,255,255,.14);padding-top:12px}
-.lbl{font-size:12px;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em;font-weight:500}
-.stat .num{font-size:26px;line-height:1.1;display:block}
+.hero .big{font:700 58px/0.98 var(--display);font-variant-numeric:tabular-nums}
+.hero .row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.stat .num{font-size:24px;line-height:1.15;display:block}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px}
 .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 10px}
-.runrow{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;color:inherit;font:inherit;cursor:pointer}
+.runrow{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer}
 .runrow:hover{border-color:var(--ink3)}
-.runrow .d{font:600 20px var(--display);text-transform:uppercase;letter-spacing:.03em}
+.runrow .d{font:700 17px var(--display);display:inline-block}
+.runrow .d::first-letter{text-transform:uppercase}
 .runrow .m{color:var(--ink2);font-size:13px}
-.runrow .k{font:700 34px/1 var(--display);font-variant-numeric:tabular-nums;text-align:right}
-.runrow .go{grid-column:1/-1;display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--ink2);border-top:1px solid var(--line);padding-top:8px;margin-top:6px}
-.runrow .go b{color:var(--ink);font-family:var(--display);font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
-.back,.link{align-self:flex-start;background:none;border:0;color:var(--ink2);font:500 14px var(--body);padding:4px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.runrow .k{font:700 30px/1 var(--display);font-variant-numeric:tabular-nums;text-align:right}
+.runrow .go{grid-column:1/-1;display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--ink2);border-top:1px solid var(--line);padding-top:8px;margin-top:6px}
+.runrow .go b{color:var(--ink);font-family:var(--display);font-size:17px;font-variant-numeric:tabular-nums}
+.back,.link{align-self:flex-start;background:none;border:0;color:var(--ink2);font-size:13.5px;font-weight:500;padding:4px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .back{text-decoration:none}
 .back:hover,.link:hover{color:var(--ink)}
-.btn{display:inline-block;font:600 18px var(--display);text-transform:uppercase;letter-spacing:.05em;background:var(--ink);color:var(--bg);border:0;border-radius:10px;padding:13px 20px;cursor:pointer;text-align:center}
-.btn.ghost{background:none;color:var(--ink);border:1.5px solid var(--ink)}
-.btn:hover{opacity:.88}
 ul.read,ol.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
 ul.read li{padding-left:14px;border-left:3px solid var(--line)}
-ul.read b{font-weight:600}
 ol.steps{counter-reset:s}
 ol.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start}
-ol.steps li::before{content:counter(s);font:700 20px/28px var(--display);width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ink);text-align:center}
+ol.steps li::before{content:counter(s);font:700 15px/26px var(--display);width:28px;height:28px;border-radius:50%;border:1.5px solid var(--acc);color:var(--acc);text-align:center}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 th{font-size:11px;font-weight:500;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;text-align:right;padding:0 0 6px 8px;white-space:nowrap}
 td{padding:7px 0 7px 8px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
 th:first-child,td:first-child{text-align:left;padding-left:0}
 td.barcell{width:38%;text-align:left}
+td.wrapc{white-space:normal}
 .bar{height:14px;border-radius:0 4px 4px 0;background:var(--pace);min-width:3px}
 .bar.best{outline:2px solid var(--ink);outline-offset:1px}
-td .num{font-size:17px}
+td .num{font-size:16px}
 .scroll{overflow-x:auto}
 .chart{margin-top:14px}
 .chart:first-of-type{margin-top:0}
-.chart .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.chart .hd .name{display:flex;align-items:center;gap:7px;font-weight:600;font-size:14px}
+.chart .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;min-height:24px}
+.chart .hd .name{display:flex;align-items:center;gap:7px;font-weight:600;font-size:13.5px}
 .sw{width:14px;height:3px;border-radius:2px;display:inline-block}
 .chart .hd .val{font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums;text-align:right}
-.chart .hd .val b{font:600 18px var(--display);color:var(--ink)}
+.chart .hd .val b{font:700 17px var(--display);color:var(--ink)}
 .chart svg{display:block;width:100%;touch-action:pan-y;cursor:crosshair}
 svg text{font-family:var(--body);font-size:10.5px;fill:var(--ink3);font-variant-numeric:tabular-nums}
 .zone{display:grid;grid-template-columns:86px 1fr 92px;gap:10px;align-items:center;padding:5px 0}
-.zone .zl{font-size:13px}.zone .zl b{font:600 16px var(--display);margin-right:4px}
+.zone .zl{font-size:13px}.zone .zl b{font:700 15px var(--display);margin-right:4px}
 .zone .zt{text-align:right;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums}
-.zone .zt b{color:var(--ink);font:600 16px var(--display)}
+.zone .zt b{color:var(--ink);font:700 15px var(--display)}
 .zbar{height:14px;border-radius:0 4px 4px 0;min-width:2px}
 .legend{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--ink2);margin-top:8px;flex-wrap:wrap}
 .legend i{width:22px;height:8px;display:inline-block}
 .cmp th.r,.cmp td.r{width:24%}.cmp td:first-child{white-space:normal}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px}
 .drop{border:2px dashed var(--ink3);border-radius:14px;padding:26px 16px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;background:var(--card)}
-.drop.over{border-color:var(--pace);background:color-mix(in srgb,var(--pace) 8%,var(--card))}
+.drop.over{border-color:var(--acc)}
 .drop input{position:absolute;opacity:0;width:1px;height:1px}
-.lead{font-size:17px;margin:0;max-width:34em}
+.lead{font-size:16px;margin:0;max-width:40em;color:var(--ink)}
 .prog{height:10px;border-radius:5px;background:var(--line);overflow:hidden;width:100%}
-.prog i{display:block;height:100%;width:0;background:var(--pace);border-radius:5px;transition:width .2s}
+.prog i{display:block;height:100%;width:0;background:var(--acc);border-radius:5px;transition:width .2s}
 .err{border-left:4px solid var(--hr);padding:10px 12px;background:var(--card);border-radius:0 10px 10px 0}
-.banner{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border:1.5px dashed var(--ink3);border-radius:12px;padding:10px 14px;font-size:14px}
-footer{color:var(--ink3);font-size:12px;margin-top:22px;display:flex;flex-direction:column;gap:8px}
-footer .acts{display:flex;gap:16px;flex-wrap:wrap}
-footer .link{font-size:13px}
+.banner{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border:1px dashed var(--ink3);border-radius:12px;padding:10px 14px;font-size:13.5px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;align-items:end}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink2);font-weight:500}
+input,select{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 10px;min-width:0;width:100%}
+.rowact{display:flex;gap:6px;justify-content:flex-end}
+.icon{background:none;border:1px solid var(--line);border-radius:7px;padding:3px 8px;cursor:pointer;color:var(--ink2);font-size:12.5px}
+.icon:hover{color:var(--ink);border-color:var(--ink3)}
+.bal{display:grid;grid-template-columns:84px 1fr 78px;gap:8px 10px;align-items:center;font-size:13px}
+.bal .b{height:16px;border-radius:0 5px 5px 0;min-width:2px}
+.bal .n{text-align:right;font:700 16px var(--display);font-variant-numeric:tabular-nums}
+.daynav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.daynav input{width:auto}
+footer{color:var(--ink3);font-size:12px;margin-top:26px;display:flex;flex-direction:column;gap:8px;max-width:70em}
+footer .acts{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 details summary{cursor:pointer}
+.phead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.phead .link{align-self:auto;white-space:nowrap}
+.two{align-items:start}
+.mcard{grid-template-columns:minmax(0,1fr) auto}
+.mcard .lbl,.mcard .d{overflow-wrap:anywhere}
+@media (max-width:900px){.two{grid-template-columns:1fr}}
+@media (max-width:560px){.kpis,.cards{grid-template-columns:1fr}}
+@media (max-width:860px){
+  .shell{display:block}
+  .side{position:sticky;top:0;z-index:6;height:auto;flex-direction:row;align-items:center;gap:10px;padding:8px 12px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden}
+  .side nav{flex-direction:row}.side hr,.sidecard,.brand span{display:none}
+  .side nav button{padding:8px 10px}
+  .wrap{padding:16px 16px 40px}
+  h1{font-size:24px}
+  .hero .big{font-size:52px}
+}
 @media (prefers-reduced-motion: reduce){.prog i{transition:none}}
 </style>
 </head>
 <body>
-<div class="app">
-  <header class="top"><h1>Carnet de course</h1><div class="period" id="period"></div></header>
-  <nav class="tabs" role="tablist" hidden>
-    <button role="tab" id="tab-resume" data-view="resume">Résumé</button>
-    <button role="tab" id="tab-seances" data-view="seances">Séances</button>
-    <button role="tab" id="tab-forme" data-view="forme">Forme</button>
-  </nav>
-  <main id="main"></main>
-  <footer>
-    <div class="acts" id="acts"></div>
-    <div>Ton export est lu dans ton navigateur. Aucune donnée n'est envoyée ni enregistrée sur un serveur. Site indépendant, sans lien avec Apple.</div>
-    <details><summary>Mentions légales</summary><p>Éditeur du site : [à compléter : nom et adresse de contact]. Hébergeur : [à compléter]. Ce site ne dépose aucun cookie et ne collecte aucune donnée personnelle.</p></details>
-  </footer>
+<div class="shell">
+  <aside class="side">
+    <button class="brand" data-go="tableau" aria-label="Runbook, tableau de bord"><svg width="38" height="26" viewBox="0 0 38 26" aria-hidden="true"><rect x="1.5" y="1.5" width="35" height="23" rx="11.5" fill="none" stroke="#c8f23a" stroke-width="2.5"/><path d="M8 14h5l3-6 4 10 3-6h7" fill="none" stroke="#c8f23a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>RUNBOOK</b><span>Suivi santé</span></span></button>
+    <nav id="nav" aria-label="Sections"></nav>
+    <div class="sidecard" id="sidecard"></div>
+  </aside>
+  <div class="wrap">
+    <header class="top"><div><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1></div><div class="pills" id="pills"></div></header>
+    <main id="main"></main>
+    <footer>
+      <div class="acts" id="acts"></div>
+      <div>Ton export et tes saisies sont lus et gardés sur cet appareil. Rien n'est envoyé ni enregistré sur un serveur. Outil d'information : il ne pose pas de diagnostic et ne remplace pas un avis médical. Site indépendant, sans lien avec Apple.</div>
+      <details><summary>Mentions légales</summary><p>Éditeur du site : [à compléter : nom et adresse de contact]. Hébergeur : GitHub Pages (GitHub, Inc.). Ce site ne dépose aucun cookie et ne collecte aucune donnée personnelle.</p></details>
+    </footer>
+  </div>
 </div>
 <script>
 /* Lecture d'un export Santé (export.zip) entièrement dans le navigateur. Aucune requête réseau. */
@@ -140,6 +196,39 @@ const CORE = (() => {
   const TREND = { VO2Max: "vo2", RestingHeartRate: "rhr", HeartRateVariabilitySDNN: "hrv" };
   const WIN = { HeartRate: "hr", DistanceWalkingRunning: "dist", StepCount: "steps", RunningPower: "pow" };
   const MI = 1.609344;
+  // clé, type HealthKit, catégorie, libellé, unité, agrégation par jour, décimales
+  const METRICS = [
+    ["basal", "BasalEnergyBurned", "activite", "Énergie dépensée au repos", "kcal", "sum", 0], ["active", "ActiveEnergyBurned", "activite", "Énergie dépensée en activité", "kcal", "sum", 0],
+    ["steps", "StepCount", "activite", "Pas", "pas", "sum", 0], ["dist", "DistanceWalkingRunning", "activite", "Distance parcourue", "km", "sum", 2],
+    ["effort", "PhysicalEffort", "activite", "Effort physique", "MET", "mean", 1], ["exercise", "AppleExerciseTime", "activite", "Temps d'activité", "min", "sum", 0],
+    ["hr", "HeartRate", "coeur", "Fréquence cardiaque moyenne", "bpm", "mean", 0], ["rhr", "RestingHeartRate", "coeur", "Fréquence cardiaque au repos", "bpm", "mean", 0],
+    ["hrv", "HeartRateVariabilitySDNN", "coeur", "Variabilité de la fréquence cardiaque", "ms", "mean", 0], ["hrr", "HeartRateRecoveryOneMinute", "coeur", "Récupération cardiaque à 1 min", "bpm", "mean", 0],
+    ["perf", "PeripheralPerfusionIndex", "coeur", "Indice de perfusion périphérique", "%", "mean", 2], ["afib", "AtrialFibrillationBurden", "coeur", "Fibrillation auriculaire, part du temps", "%", "mean", 1],
+    ["weight", "BodyMass", "mensurations", "Poids", "kg", "last", 1], ["bmi", "BodyMassIndex", "mensurations", "Indice de masse corporelle", "", "last", 1],
+    ["fat", "BodyFatPercentage", "mensurations", "Masse grasse", "%", "last", 1], ["lean", "LeanBodyMass", "mensurations", "Masse maigre", "kg", "last", 1],
+    ["height", "Height", "mensurations", "Taille", "cm", "last", 0], ["waist", "WaistCircumference", "mensurations", "Tour de taille", "cm", "last", 1],
+    ["wspeed", "WalkingSpeed", "mobilite", "Vitesse de marche", "km/h", "mean", 1], ["step", "WalkingStepLength", "mobilite", "Longueur de pas", "cm", "mean", 0],
+    ["dsup", "WalkingDoubleSupportPercentage", "mobilite", "Temps de double appui", "%", "mean", 1], ["asym", "WalkingAsymmetryPercentage", "mobilite", "Asymétrie de la marche", "%", "mean", 1],
+    ["steady", "AppleWalkingSteadiness", "mobilite", "Stabilité de marche", "%", "mean", 0], ["stride", "RunningStrideLength", "mobilite", "Longueur de foulée (course)", "m", "mean", 2],
+    ["vo", "RunningVerticalOscillation", "mobilite", "Oscillation verticale (course)", "cm", "mean", 1], ["gct", "RunningGroundContactTime", "mobilite", "Temps de contact au sol (course)", "ms", "mean", 0],
+    ["kcalImp", "DietaryEnergyConsumed", "nutrition", "Calories consommées", "kcal", "sum", 0], ["waterImp", "DietaryWater", "nutrition", "Eau", "ml", "sum", 0],
+    ["resp", "RespiratoryRate", "respiration", "Fréquence respiratoire", "/min", "mean", 1], ["spo2", "OxygenSaturation", "respiration", "Saturation en oxygène", "%", "mean", 1],
+    ["breath", "AppleSleepingBreathingDisturbances", "respiration", "Perturbations respiratoires", "/h", "mean", 1], ["fvc", "ForcedVitalCapacity", "respiration", "Capacité vitale forcée", "L", "last", 2],
+    ["fev1", "ForcedExpiratoryVolume1", "respiration", "Volume expiratoire en 1 s (VEMS)", "L", "last", 2], ["pef", "PeakExpiratoryFlowRate", "respiration", "Débit expiratoire maximal", "L/min", "last", 0],
+    ["temp", "BodyTemperature", "vitaux", "Température corporelle", "°C", "mean", 1], ["wtemp", "AppleSleepingWristTemperature", "vitaux", "Température au poignet (sommeil)", "°C", "mean", 1],
+    ["sys", "BloodPressureSystolic", "vitaux", "Tension systolique", "mmHg", "mean", 0], ["dia", "BloodPressureDiastolic", "vitaux", "Tension diastolique", "mmHg", "mean", 0],
+    ["vo2", "VO2Max", "vitaux", "VO2 max estimée", "ml/kg/min", "mean", 1]
+  ].map(([key, hk, cat, label, unit, agg, dec]) => ({ key, hk, cat, label, unit, agg, dec }));
+  const HOURLY = { steps: 1, active: 1, basal: 1, dist: 1, hr: 1 };
+  function conv(md, v, u) {
+    if (u === "%") return v * 100;
+    switch (u) {
+      case "kJ": return v * .239; case "mi": return v * MI; case "lb": return v * .45359237; case "mi/hr": return v * MI; case "degF": return (v - 32) / 1.8;
+      case "in": return v * 2.54; case "ft": return v * 30.48; case "fl_oz_us": return v * 29.5735; case "m/s": return md.unit === "km/h" ? v * 3.6 : v;
+      case "L": return md.unit === "ml" ? v * 1000 : v; case "m": return md.unit === "cm" ? v * 100 : v; case "cm": return md.unit === "m" ? v / 100 : v;
+    }
+    return v;
+  }
 
   // "2026-11-06 16:58:44 +0100" -> secondes epoch
   function ts(s) {
@@ -220,7 +309,7 @@ const CORE = (() => {
 
   /* ---------- séances ---------- */
   function parseWorkout(L) {
-    const h = L[0], w = { start: ts(attr(h, "startDate")), end: ts(attr(h, "endDate")), startStr: attr(h, "startDate"), endStr: attr(h, "endDate"), source: (attr(h, "sourceName") || "").replace(/ /g, " "), stats: {}, zones: null, route: null, ev: [], elev: null };
+    const h = L[0], w = { type: (attr(h, "workoutActivityType") || "").replace("HKWorkoutActivityType", ""), start: ts(attr(h, "startDate")), end: ts(attr(h, "endDate")), startStr: attr(h, "startDate"), endStr: attr(h, "endDate"), source: (attr(h, "sourceName") || "").replace(/ /g, " "), stats: {}, zones: null, route: null, ev: [], elev: null };
     const d = num(attr(h, "duration")), du = attr(h, "durationUnit");
     w.dur = d != null ? d * (du === "min" ? 60 : du === "hr" ? 3600 : 1) : w.end - w.start;
     const td = num(attr(h, "totalDistance")); if (td != null) w.dist = td * (attr(h, "totalDistanceUnit") === "mi" ? MI : 1);
@@ -236,6 +325,8 @@ const CORE = (() => {
       else if (l.startsWith("FileReference", c)) w.route = attr(l, "path");
     }
     const ds = w.stats.DistanceWalkingRunning; if (ds && ds.sum != null) w.dist = ds.sum * (ds.unit === "mi" ? MI : 1);
+    for (const k in w.stats) if (k.startsWith("Distance") && w.stats[k].sum != null && w.distAny == null) { const u = w.stats[k].unit; w.distAny = w.stats[k].sum * (u === "mi" ? MI : u === "m" ? .001 : u === "yd" ? .0009144 : 1); }
+    if (w.distAny == null && w.dist != null) w.distAny = w.dist;
     const es = w.stats.ActiveEnergyBurned; if (es && es.sum != null) w.kcal = es.sum * (es.unit === "kJ" ? .239 : 1);
     return w;
   }
@@ -356,101 +447,202 @@ const CORE = (() => {
     try { entries = await zipEntries(file); } catch (e) { throw new Error("NOT_ZIP"); }
     const xml = entries.filter(e => /\.xml$/i.test(e.name) && !/cda/i.test(e.name)).sort((a, b) => b.us - a.us)[0];
     if (!xml) throw new Error("NO_EXPORT");
-    // passe 1 : séances de course et tendances
-    const W = [], T = { vo2: [], rhr: [], hrv: [] }; let inW = null, exported = null;
+    // passe 1 : mesures quotidiennes, séances, tendances
+    const W = [], T = { vo2: [], rhr: [], hrv: [] }, IDX = new Map(), events = [], hSum = {}, hHr = Array.from({ length: 24 }, () => [0, 0]);
+    METRICS.forEach(m => { m._d = new Map(); IDX.set(m.hk, m); });
+    let inW = null, exported = null, nRec = 0;
     await eachLine(await entryStream(file, xml), xml.us, line => {
-      if (inW) { if (inW !== 1) inW.push(line); if (line.indexOf("</Workout>") >= 0) { if (inW !== 1) W.push(parseWorkout(inW)); inW = null; } return; }
+      if (inW) { inW.push(line); if (line.indexOf("</Workout>") >= 0) { W.push(parseWorkout(inW)); inW = null; } return; }
       const c = line.indexOf("<") + 1;
       if (line.startsWith("Record ", c)) {
-        const t = attr(line, "type"); if (!t) return; const k = TREND[t.slice(P.length)]; if (!k) return;
-        const v = num(attr(line, "value")), sd = attr(line, "startDate"); if (v != null && sd) T[k].push([ts(sd), v]);
+        const t = attr(line, "type"); if (!t) return; nRec++;
+        if (!t.startsWith(P)) { if (t === "HKCategoryTypeIdentifierIrregularHeartRhythmEvent") { const sd = attr(line, "startDate"); if (sd) events.push(sd.slice(0, 10)); } return; }
+        const sh = t.slice(P.length), k = TREND[sh], md = IDX.get(sh); if (!k && !md) return;
+        const raw = num(attr(line, "value")), sd = attr(line, "startDate"); if (raw == null || !sd) return;
+        if (k) T[k].push([ts(sd), raw]);
+        if (!md) return;
+        const v = conv(md, raw, attr(line, "unit")), day = sd.slice(0, 10), isExp = day === exported && HOURLY[md.key];
+        if (md.agg === "sum") {
+          const sn = attr(line, "sourceName") || ""; let m = md._d.get(day); if (!m) md._d.set(day, m = new Map()); m.set(sn, (m.get(sn) || 0) + v);
+          if (isExp) { const hm = hSum[md.key] || (hSum[md.key] = new Map()); let a = hm.get(sn); if (!a) hm.set(sn, a = new Array(24).fill(0)); a[+sd.slice(11, 13)] += v; }
+        } else if (md.agg === "mean") {
+          let a = md._d.get(day); if (!a) md._d.set(day, a = [0, 0]); a[0] += v; a[1]++;
+          if (isExp) { const a2 = hHr[+sd.slice(11, 13)]; a2[0] += v; a2[1]++; }
+        } else { const a = md._d.get(day); if (!a || sd >= a[0]) md._d.set(day, [sd, v]); }
       } else if (line.startsWith("Workout ", c)) {
-        const run = attr(line, "workoutActivityType") === "HKWorkoutActivityTypeRunning";
-        if (line.endsWith("/>")) { if (run) W.push(parseWorkout([line])); } else inW = run ? [line] : 1;
+        if (line.endsWith("/>")) W.push(parseWorkout([line])); else inW = [line];
       } else if (line.startsWith("ExportDate", c)) { const v = attr(line, "value"); if (v) exported = v.slice(0, 10); }
     }, p => onProg(1, p));
-    const runsW = W.filter(w => w.dist >= .5 && w.dur >= 180).sort((a, b) => a.start - b.start);
-    if (!runsW.length) throw new Error("NO_RUNS");
-    // passe 2 : relevés pendant les sorties
-    const days = new Set(), src = new Map();
-    runsW.forEach(w => { w.rec = { hr: [], dist: [], steps: [], pow: [] }; days.add(w.startStr.slice(0, 10)); days.add(w.endStr.slice(0, 10)); });
-    const starts = runsW.map(w => w.start);
-    inW = null;
-    await eachLine(await entryStream(file, xml), xml.us, line => {
-      if (inW) { if (line.indexOf("</Workout>") >= 0) inW = null; return; }
-      const c = line.indexOf("<") + 1;
-      if (line.startsWith("Record ", c)) {
-        const t = attr(line, "type"); if (!t) return; const k = WIN[t.slice(P.length)]; if (!k) return;
-        const sd = attr(line, "startDate"); if (!sd || !days.has(sd.slice(0, 10))) return;
-        const t0 = ts(sd); let lo = 0, hi = starts.length; while (lo < hi) { const m = (lo + hi) >> 1; if (starts[m] <= t0 + 1) lo = m + 1; else hi = m; }
-        const w = runsW[lo - 1]; if (!w || t0 > w.end) return;
-        let v = num(attr(line, "value")); if (v == null) return; if (k === "dist" && attr(line, "unit") === "mi") v *= MI;
-        const sn = attr(line, "sourceName") || ""; let si = src.get(sn); if (si == null) src.set(sn, si = src.size);
-        const ed = attr(line, "endDate"); w.rec[k].push([t0, ed ? ts(ed) : t0, v, si]);
-      } else if (line.startsWith("Workout ", c) && !line.endsWith("/>")) inW = 1;
-    }, p => onProg(2, p));
-    // tracés GPS des sorties
-    const gpx = new Map(); entries.forEach(e => { if (/\.gpx$/i.test(e.name)) gpx.set(e.name.split("/").pop(), e); });
-    const runs = [];
-    for (let i = 0; i < runsW.length; i++) {
-      const w = runsW[i], en = w.route ? gpx.get(w.route.split("/").pop()) : null;
-      let txt = null; if (en) { try { txt = await entryText(file, en); } catch (e) { txt = null; } }
-      runs.push(compute(w, txt)); w.rec = null;
-      onProg(3, (i + 1) / runsW.length);
-      if (i % 20 === 19) await new Promise(r => setTimeout(r));
+    if (!nRec && !W.length) throw new Error("NO_EXPORT");
+    const days = {};
+    for (const m of METRICS) {
+      const rows = [];
+      for (const [day, a] of m._d) rows.push([day, +(m.agg === "sum" ? Math.max(...a.values()) : m.agg === "mean" ? a[0] / a[1] : a[1]).toFixed(m.dec + 1)]);
+      m._d = null; if (rows.length) days[m.key] = rows.sort((x, y) => x[0] < y[0] ? -1 : 1);
     }
-    finishZones(runs);
-    const seen = {}; runs.forEach(r => { seen[r.id] = (seen[r.id] || 0) + 1; if (seen[r.id] > 1) r.id += "-" + seen[r.id]; });
-    return { exported: exported || dayId(Date.now() / 1000), runs, trend: trends(T) };
+    const hours = {};
+    for (const k in hSum) { const best = [...hSum[k].values()].sort((a, b) => b.reduce((x, y) => x + y, 0) - a.reduce((x, y) => x + y, 0))[0]; hours[k] = best.map(v => +v.toFixed(2)); }
+    if (hHr.some(a => a[1])) hours.hr = hHr.map(a => a[1] ? Math.round(a[0] / a[1]) : null);
+    const acts = W.slice().sort((a, b) => a.start - b.start).slice(-300).map(w => ({ type: w.type, t0: Math.round(w.start), day: dayId(w.start), start: w.startStr.slice(11, 16), dur: Math.round(w.dur), dist: w.distAny != null ? +w.distAny.toFixed(2) : null, kcal: w.kcal != null ? Math.round(w.kcal) : null, hr: w.stats.HeartRate && w.stats.HeartRate.avg ? Math.round(w.stats.HeartRate.avg) : null, source: w.source }));
+    const runsW = W.filter(w => w.type === "Running" && w.dist >= .5 && w.dur >= 180).sort((a, b) => a.start - b.start), runs = [];
+    if (runsW.length) {
+      // passe 2 : relevés pendant les sorties de course
+      const dset = new Set(), src = new Map();
+      runsW.forEach(w => { w.rec = { hr: [], dist: [], steps: [], pow: [] }; dset.add(w.startStr.slice(0, 10)); dset.add(w.endStr.slice(0, 10)); });
+      const starts = runsW.map(w => w.start);
+      inW = null;
+      await eachLine(await entryStream(file, xml), xml.us, line => {
+        if (inW) { if (line.indexOf("</Workout>") >= 0) inW = null; return; }
+        const c = line.indexOf("<") + 1;
+        if (line.startsWith("Record ", c)) {
+          const t = attr(line, "type"); if (!t) return; const k = WIN[t.slice(P.length)]; if (!k) return;
+          const sd = attr(line, "startDate"); if (!sd || !dset.has(sd.slice(0, 10))) return;
+          const t0 = ts(sd); let lo = 0, hi = starts.length; while (lo < hi) { const m = (lo + hi) >> 1; if (starts[m] <= t0 + 1) lo = m + 1; else hi = m; }
+          const w = runsW[lo - 1]; if (!w || t0 > w.end) return;
+          let v = num(attr(line, "value")); if (v == null) return; if (k === "dist" && attr(line, "unit") === "mi") v *= MI;
+          const sn = attr(line, "sourceName") || ""; let si = src.get(sn); if (si == null) src.set(sn, si = src.size);
+          const ed = attr(line, "endDate"); w.rec[k].push([t0, ed ? ts(ed) : t0, v, si]);
+        } else if (line.startsWith("Workout ", c) && !line.endsWith("/>")) inW = 1;
+      }, p => onProg(2, p));
+      const gpx = new Map(); entries.forEach(e => { if (/\.gpx$/i.test(e.name)) gpx.set(e.name.split("/").pop(), e); });
+      for (let i = 0; i < runsW.length; i++) {
+        const w = runsW[i], en = w.route ? gpx.get(w.route.split("/").pop()) : null;
+        let txt = null; if (en) { try { txt = await entryText(file, en); } catch (e) { txt = null; } }
+        runs.push(compute(w, txt)); w.rec = null;
+        onProg(3, (i + 1) / runsW.length);
+        if (i % 20 === 19) await new Promise(r => setTimeout(r));
+      }
+      finishZones(runs);
+      const seen = {}; runs.forEach(r => { seen[r.id] = (seen[r.id] || 0) + 1; if (seen[r.id] > 1) r.id += "-" + seen[r.id]; });
+    }
+    onProg(3, 1);
+    return { v: 2, exported: exported || dayId(Date.now() / 1000), runs, trend: trends(T), days, hours, acts, events: [...new Set(events)].sort() };
   }
-  return { importZip };
+  return { importZip, METRICS: METRICS.map(({ key, cat, label, unit, agg, dec }) => ({ key, cat, label, unit, agg, dec })) };
 })();
 
 </script>
 <script>
 let DATA = null, R = [], last = null, prev = null, DEMO = false, shown = 40;
+let MAN = { foods: [], water: [], measures: [], goal: 2000 }, per = "30", nutDay = null, editId = null, armed = false;
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[<>]/g, c => c == "<" ? "&lt;" : "&gt;");
+const escU = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 const MC = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
 const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const p2 = n => String(n).padStart(2, "0");
+const did = d => d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate());
+const today = () => did(new Date());
 const dOf = id => new Date(id.slice(0, 10) + "T12:00:00");
 const dayN = id => Math.round(dOf(id) / 864e5);
+const addDays = (s, n) => { const d = dOf(s); d.setDate(d.getDate() + n); return did(d); };
 const dLong = id => { const d = dOf(id); return JOURS[d.getDay()] + " " + d.getDate() + " " + MOIS[d.getMonth()]; };
 const dShort = id => { const d = dOf(id); return d.getDate() + " " + MC[d.getMonth()]; };
+const dShortY = id => dShort(id) + (id.slice(0, 4) != today().slice(0, 4) ? " " + id.slice(0, 4) : "");
 const pace = s => s == null ? "–" : Math.floor(Math.round(s) / 60) + "'" + String(Math.round(s) % 60).padStart(2, "0") + '"';
-const dur = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(x).padStart(2, "0"); };
-const fr = (v, n = 0) => v == null ? "–" : v.toFixed(n).replace(".", ",");
+const dur = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return (h ? h + ":" + p2(m) : m) + ":" + p2(x); };
+const fr = (v, n = 0) => v == null || !isFinite(v) ? "–" : (Math.abs(v) >= 10000 && n == 0 ? Math.round(v).toLocaleString("fr-FR") : v.toFixed(n).replace(".", ","));
+const nval = s => { const x = parseFloat(String(s).replace(",", ".")); return isFinite(x) ? x : null; };
 const stat = (l, v, u = "") => `<div class="stat"><span class="lbl">${l}</span><span class="num">${v}${u ? `<span class="unit">${u}</span>` : ""}</span></div>`;
 const ZN = ["Z1","Z2","Z3","Z4","Z5"];
 const zr = (r, i) => i == 0 ? "< " + r.zb[0] : i == 4 ? "≥ " + r.zb[3] : r.zb[i - 1] + "–" + (r.zb[i] - 1);
 const hardPct = r => { if (!r.zones) return null; const t = r.zones.reduce((a, b) => a + b, 0); return t ? (r.zones[3] + r.zones[4]) / t * 100 : null; };
+const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+
+/* ---------- catégories et mesures ---------- */
+const MDEF = {}; CORE.METRICS.forEach(m => MDEF[m.key] = m);
+[["total", "activite", "Énergie totale dépensée", "kcal", "sum", 0], ["kcalIn", "nutrition", "Calories consommées", "kcal", "sum", 0], ["water", "nutrition", "Eau", "ml", "sum", 0],
+ ["belly", "mensurations", "Tour de ventre", "cm", "last", 1], ["chest", "mensurations", "Tour de poitrine", "cm", "last", 1], ["hips", "mensurations", "Tour de hanches", "cm", "last", 1], ["thigh", "mensurations", "Tour de cuisse", "cm", "last", 1], ["arm", "mensurations", "Tour de bras", "cm", "last", 1]
+].forEach(([key, cat, label, unit, agg, dec]) => MDEF[key] = { key, cat, label, unit, agg, dec });
+const MANUAL = ["weight", "fat", "lean", "height", "waist", "belly", "chest", "hips", "thigh", "arm"];
+const CATS = [
+  { id: "activite", name: "Activité", keys: ["total", "active", "basal", "steps", "dist", "exercise", "effort"], main: "steps" },
+  { id: "coeur", name: "Cœur", keys: ["hr", "rhr", "hrv", "hrr", "perf", "afib"], main: "rhr" },
+  { id: "mensurations", name: "Mensurations", keys: ["weight", "bmi", "fat", "lean", "height", "waist", "belly", "chest", "hips", "thigh", "arm"], main: "weight" },
+  { id: "mobilite", name: "Mobilité", keys: ["wspeed", "step", "dsup", "asym", "steady", "stride", "vo", "gct"], main: "wspeed" },
+  { id: "nutrition", name: "Nutrition", keys: ["kcalIn", "water"], main: "kcalIn" },
+  { id: "respiration", name: "Respiration", keys: ["resp", "spo2", "breath", "fvc", "fev1", "pef"], main: "resp" },
+  { id: "vitaux", name: "Signes vitaux", keys: ["hr", "rhr", "hrv", "resp", "spo2", "temp", "wtemp", "sys", "dia", "vo2"], main: "hr" }
+];
+const CAT = {}; CATS.forEach(c => CAT[c.id] = c);
+const PER = [["today", "Aujourd'hui"], ["7", "7 jours"], ["30", "30 jours"], ["90", "3 mois"], ["365", "1 an"], ["all", "Tout"]];
+const perName = () => PER.find(p => p[0] == per)[1];
+const SER = new Map(), bump = () => SER.clear();
+function series(key) {
+  if (SER.has(key)) return SER.get(key);
+  const imp = k => DATA && DATA.days && DATA.days[k] ? DATA.days[k] : [];
+  let rows = imp(key).map(r => [r[0], r[1], "a"]);
+  if (key == "total") { const b = new Map(imp("basal")), a = new Map(imp("active")); rows = [...a.keys()].filter(d => b.has(d)).sort().map(d => [d, Math.round(a.get(d) + b.get(d)), "c"]); }
+  else if (key == "bmi" && !rows.length) { const h = series("height"), hv = h.length ? h[h.length - 1][1] : null; if (hv) rows = series("weight").map(r => [r[0], +(r[1] / (hv / 100) ** 2).toFixed(1), "c"]); }
+  else if (key == "kcalIn" || key == "water") {
+    const m = new Map(imp(key == "kcalIn" ? "kcalImp" : "waterImp").map(r => [r[0], [r[1], "a"]])), man = new Map();
+    (key == "kcalIn" ? MAN.foods : MAN.water).forEach(x => man.set(x.day, (man.get(x.day) || 0) + (key == "kcalIn" ? x.kcal : x.ml)));
+    man.forEach((v, d) => m.set(d, [v, "m"])); rows = [...m].sort((a, b) => a[0] < b[0] ? -1 : 1).map(([d, a]) => [d, a[0], a[1]]);
+  }
+  if (MANUAL.includes(key)) { const m = new Map(rows.map(r => [r[0], r])); MAN.measures.filter(x => x.key == key).forEach(x => m.set(x.day, [x.day, x.v, "m"])); rows = [...m.values()].sort((a, b) => a[0] < b[0] ? -1 : 1); }
+  SER.set(key, rows); return rows;
+}
+function range() { const t = today(); if (per == "today") return [t, t]; if (per == "all") { let mn = t; Object.keys(MDEF).forEach(k => { const s = series(k); if (s.length && s[0][0] < mn) mn = s[0][0]; }); return [mn, t]; } return [addDays(t, -(+per - 1)), t]; }
+const inR = (rows, r) => rows.filter(x => x[0] >= r[0] && x[0] <= r[1]);
+const aggv = (d, rows) => !rows.length ? null : d.agg == "last" ? rows[rows.length - 1][1] : mean(rows.map(r => r[1]));
+const fmtV = (d, v) => fr(v, d.agg == "sum" && d.unit != "km" ? 0 : d.dec);
+const srcTag = rows => { const s = new Set(rows.map(r => r[2])); return s.size > 1 ? `<span class="tag m">Mesuré + saisi</span>` : s.has("m") ? `<span class="tag m">Saisi</span>` : s.has("c") ? `<span class="tag">Calculé</span>` : `<span class="tag">Mesuré</span>`; };
+function buckets(rows, r, d) {
+  const span = dayN(r[1]) - dayN(r[0]) + 1, mode = span <= 31 ? "d" : span <= 100 ? "w" : "m", m = new Map();
+  const monday = day => { const x = dOf(day); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return did(x); };
+  const key = day => mode == "d" ? day : mode == "m" ? day.slice(0, 8) + "01" : monday(day);
+  rows.forEach(x => { const k = key(x[0]); if (!m.has(k)) m.set(k, []); m.get(k).push(x[1]); });
+  const keys = [];
+  if (mode == "d") for (let x = r[0]; x <= r[1]; x = addDays(x, 1)) keys.push(x);
+  else for (let x = key(r[0]); x <= r[1] && keys.length < 400; ) { keys.push(x); if (mode == "w") x = addDays(x, 7); else { const q = dOf(x); q.setMonth(q.getMonth() + 1); x = did(q); } }
+  return { mode, list: keys.map(k => ({ k, v: m.has(k) ? (d.agg == "last" ? m.get(k)[m.get(k).length - 1] : mean(m.get(k))) : null })) };
+}
+function spark(rows, d, color, w = 110, h = 34) {
+  const pts = rows.slice(-30); if (pts.length < 2) return "";
+  const vs = pts.map(p => p[1]), lo = Math.min(...vs), hi = Math.max(...vs), Y = v => h - 3 - (hi > lo ? (v - lo) / (hi - lo) : .5) * (h - 6);
+  if (d.agg == "sum") { const bw = w / pts.length; return `<svg width="${w}" height="${h}" aria-hidden="true">${pts.map((p, i) => { const y = h - 2 - (hi ? p[1] / hi : 0) * (h - 4); return `<rect x="${(i * bw + .5).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(1, bw - 1).toFixed(1)}" height="${(h - 2 - y).toFixed(1)}" rx="1" fill="${color}"/>`; }).join("")}</svg>`; }
+  return `<svg width="${w}" height="${h}" aria-hidden="true"><path d="${pts.map((p, i) => (i ? "L" : "M") + (i / (pts.length - 1) * (w - 6) + 3).toFixed(1) + " " + Y(p[1]).toFixed(1)).join("")}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${w - 3}" cy="${Y(vs[vs.length - 1]).toFixed(1)}" r="3" fill="${color}"/></svg>`;
+}
+function mcard(key, r, cat) {
+  const d = MDEF[key], all = series(key), rows = inR(all, r), lastRow = all[all.length - 1], color = `var(--c-${cat || d.cat})`;
+  let v, sub;
+  if (rows.length) {
+    v = `<span class="v">${fmtV(d, aggv(d, rows))}<span class="unit">${d.unit}</span></span>`;
+    sub = d.agg == "last" ? "Dernier relevé le " + dShortY(rows[rows.length - 1][0]) : rows.length > 1 ? (d.agg == "sum" ? "Moyenne par jour" : "Moyenne") + " sur " + rows.length + " jours" : dShortY(rows[0][0]);
+  } else if (lastRow) { v = `<span class="v none">Rien sur la période</span>`; sub = `Dernier relevé le ${dShortY(lastRow[0])} : ${fmtV(d, lastRow[1])} ${d.unit}`; }
+  else { v = `<span class="v none">Pas encore de donnée</span>`; sub = MANUAL.includes(key) || d.cat == "nutrition" ? "À saisir dans cette catégorie" : DATA && DATA.days ? "Absente de ton export" : "Importe un export pour la remplir"; }
+  return `<button class="mcard" data-go="m-${key}"><span class="hdr"><span class="lbl">${d.label}</span>${rows.length ? srcTag(rows) : ""}</span>${v}${spark(rows.length > 1 ? rows : [], d, color)}<span class="d">${sub}</span></button>`;
+}
+const perChips = () => `<div class="chips" role="group" aria-label="Période">${PER.map(([k, l]) => `<button data-act="period" data-p="${k}" aria-pressed="${per == k}">${l}</button>`).join("")}</div>`;
+const staleNote = () => DATA && DATA.days && DATA.exported < today() ? `<p class="note" style="margin:0">Les mesures de ton export s'arrêtent au ${dShortY(DATA.exported)}. Refais un export pour voir les jours suivants.</p>` : "";
 
 /* ---------- graphiques ---------- */
-function nice(lo, hi, n) { const st = [1,2,5,10,15,20,30,60,120], raw = (hi - lo) / n; let s = st.find(x => x >= raw) || Math.ceil(raw / 50) * 50; if (raw < 1) s = raw < .25 ? .25 : raw < .5 ? .5 : 1; const t = []; for (let v = Math.ceil(lo / s) * s; v <= hi + 1e-9; v += s) t.push(+v.toFixed(2)); return t; }
+function nice(lo, hi, n) { const st = [1,2,5,10,15,20,30,60,120,250,500,1000,2000,5000], raw = (hi - lo) / n; let s = st.find(x => x >= raw) || Math.ceil(raw / 5000) * 5000; if (raw < 1) s = raw < .05 ? .05 : raw < .1 ? .1 : raw < .25 ? .25 : raw < .5 ? .5 : 1; const t = []; for (let v = Math.ceil(lo / s) * s; v <= hi + 1e-9; v += s) t.push(+v.toFixed(2)); return t; }
 function dayAxis(d0, d1) {
-  const span = d1 - d0, step = span <= 100 ? 1 : span <= 500 ? 2 : span <= 1100 ? 6 : 12, ticks = [], a = new Date(d0 * 864e5);
+  const span = d1 - d0, long = v => { const d = new Date(v * 864e5); return d.getDate() + " " + MC[d.getMonth()] + " " + d.getFullYear(); };
+  if (span <= 35) { const st = span <= 10 ? 1 : 7, ticks = []; for (let v = d1; v >= d0; v -= st) ticks.push(v); return { ticks, xfmt: (v, l) => { const d = new Date(v * 864e5); return l ? long(v) : d.getDate() + "/" + (d.getMonth() + 1); } }; }
+  const step = span <= 100 ? 1 : span <= 500 ? 2 : span <= 1100 ? 6 : 12, ticks = [], a = new Date(d0 * 864e5);
   for (let d = new Date(a.getFullYear(), a.getMonth() + 1, 1); d / 864e5 < d1 - 5; d.setMonth(d.getMonth() + 1)) if (d.getMonth() % step == 0) ticks.push(Math.round(d / 864e5) + 1);
-  const xfmt = (v, long) => { const d = new Date(v * 864e5); return long ? d.getDate() + " " + MC[d.getMonth()] + " " + d.getFullYear() : step >= 12 ? d.getFullYear() : step == 6 ? MC[d.getMonth()] + " " + String(d.getFullYear()).slice(2) : MC[d.getMonth()]; };
-  return { ticks, xfmt };
+  return { ticks, xfmt: (v, l) => { const d = new Date(v * 864e5); return l ? long(v) : step >= 12 ? d.getFullYear() : step == 6 ? MC[d.getMonth()] + " " + String(d.getFullYear()).slice(2) : MC[d.getMonth()]; } };
 }
-// o: {x, y, color, invert, fmt, unit, xfmt, xticks, area, name, marks, endDot, dots, defText}
+// o: {x, y, color, invert, fmt, unit, xfmt, xticks, area, name, marks, endDot, dots, join, defText}
 function lineChart(host, o, group) {
-  const W = host.clientWidth || 320, H = o.h || 118, m = { l: 36, r: 10, t: 8, b: 18 };
+  const W = host.clientWidth || 320, H = o.h || 118, m = { l: 40, r: 10, t: 8, b: 18 };
   const pts = o.x.map((x, i) => [x, o.y[i]]).filter(p => p[1] != null);
-  if (pts.length < 2) { host.innerHTML = `<div class="hd"><span class="name"><span class="sw" style="background:${o.color}"></span>${o.name}</span><span class="val">pas de relevé</span></div>`; return group; }
+  if (pts.length < 2) { host.innerHTML = `<div class="hd"><span class="name"><span class="sw" style="background:${o.color}"></span>${o.name}</span><span class="val">${pts.length ? "un seul relevé" : "pas de relevé"}</span></div>`; return group; }
   let lo = Math.min(...pts.map(p => p[1])), hi = Math.max(...pts.map(p => p[1]));
-  const pad = (hi - lo) * .12 || 1; lo -= pad; hi += pad;
+  const pad = (hi - lo) * .12 || Math.abs(hi) * .05 || 1; lo -= pad; hi += pad;
   const x0 = o.x[0], x1 = o.x[o.x.length - 1];
   const X = v => m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r);
   const Y = v => { const f = (v - lo) / (hi - lo); return o.invert ? m.t + f * (H - m.t - m.b) : H - m.b - f * (H - m.t - m.b); };
   let path = "", open = false, segs = [], cur = [];
-  o.y.forEach((v, i) => { if (v == null) { open = false; if (cur.length) segs.push(cur); cur = []; return; } path += (open ? "L" : "M") + X(o.x[i]).toFixed(1) + " " + Y(v).toFixed(1); open = true; cur.push(i); });
+  o.y.forEach((v, i) => { if (v == null) { if (!o.join) { open = false; if (cur.length) segs.push(cur); cur = []; } return; } path += (open ? "L" : "M") + X(o.x[i]).toFixed(1) + " " + Y(v).toFixed(1); open = true; cur.push(i); });
   if (cur.length) segs.push(cur);
   const base = H - m.b;
-  const area = o.area ? segs.map(s => `<path d="M${X(o.x[s[0]]).toFixed(1)} ${base}` + s.map(i => `L${X(o.x[i]).toFixed(1)} ${Y(o.y[i]).toFixed(1)}`).join("") + `L${X(o.x[s[s.length - 1]]).toFixed(1)} ${base}Z" fill="${o.color}" opacity=".14"/>`).join("") : "";
+  const area = o.area ? segs.map(s => `<path d="M${X(o.x[s[0]]).toFixed(1)} ${base}` + s.map(i => `L${X(o.x[i]).toFixed(1)} ${Y(o.y[i]).toFixed(1)}`).join("") + `L${X(o.x[s[s.length - 1]]).toFixed(1)} ${base}Z" fill="${o.color}" opacity=".16"/>`).join("") : "";
   const yt = nice(lo, hi, 3).map(v => `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${m.l - 6}" y="${Y(v) + 3.5}" text-anchor="end">${o.fmt(v)}</text>`).join("");
-  const xt = o.xticks.map(v => `<text x="${X(v)}" y="${H - 4}" text-anchor="middle">${o.xfmt(v)}</text>`).join("");
+  const xt = o.xticks.filter(v => X(v) > m.l + 8 && X(v) < W - 14).map(v => `<text x="${X(v)}" y="${H - 4}" text-anchor="middle">${o.xfmt(v)}</text>`).join("");
   const mk = (o.marks || []).filter(v => v >= x0 && v <= x1).map(v => `<line x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${base}" stroke="var(--ink3)" stroke-dasharray="2 3" opacity=".6"/>`).join("");
   const lp = pts[pts.length - 1];
   const dots = o.dots ? pts.map(p => `<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="3" fill="${o.color}" stroke="var(--card)" stroke-width="1.5"/>`).join("") : "";
@@ -468,20 +660,22 @@ function lineChart(host, o, group) {
   };
   show(null);
   const members = group || []; members.push(show);
-  const idx = o.dots ? o.x.map((x, i) => i).filter(i => o.y[i] != null) : o.x.map((x, i) => i);
-  const at = e => { const r = svg.getBoundingClientRect(), xv = x0 + ((e.clientX - r.left) / r.width * W - m.l) / (W - m.l - m.r) * (x1 - x0); let b = idx[0], bd = 1e18; idx.forEach(i => { const d = Math.abs(o.x[i] - xv); if (d < bd) { bd = d; b = i; } }); members.forEach(f => f(b)); };
+  const idx = o.dots || o.join ? o.x.map((x, i) => i).filter(i => o.y[i] != null) : o.x.map((x, i) => i);
+  const at = e => { const r = svg.getBoundingClientRect(), xv = x0 + ((e.clientX - r.left) / r.width * W - m.l) / (W - m.l - m.r) * (x1 - x0); let b = idx[0], bd = 1e18; idx.forEach(i => { const dd = Math.abs(o.x[i] - xv); if (dd < bd) { bd = dd; b = i; } }); members.forEach(f => f(b)); };
   svg.addEventListener("pointermove", at); svg.addEventListener("pointerdown", at);
   svg.addEventListener("pointerleave", () => members.forEach(f => f(null)));
   return members;
 }
+// o: {name, v (null = pas de donnée), labels, long, color, fmt, unit, h}
 function barChart(host, o) {
-  const W = host.clientWidth || 320, H = 140, m = { l: 8, r: 8, t: 18, b: 18 }, n = o.v.length, bw = (W - m.l - m.r) / n, hi = Math.max(...o.v, 1), base = H - m.b;
-  const Y = v => base - v / hi * (H - m.t - m.b);
-  const bars = o.v.map((v, i) => { const x = m.l + i * bw + 1, w = bw - 2, y = Y(v), h = base - y; return (v > 0 ? `<path d="M${x} ${base}V${y + Math.min(4, h)}q0 -${Math.min(4, h)} ${Math.min(4, w / 2)} -${Math.min(4, h)}H${x + w - Math.min(4, w / 2)}q${Math.min(4, w / 2)} 0 ${Math.min(4, w / 2)} ${Math.min(4, h)}V${base}Z" fill="var(--pace)"/><text x="${x + w / 2}" y="${y - 4}" text-anchor="middle" style="fill:var(--ink2)">${v >= 10 ? Math.round(v) : fr(v, 1)}</text>` : "") + `<rect x="${x - 1}" y="${m.t}" width="${bw}" height="${base - m.t}" fill="transparent" data-i="${i}"/>`; }).join("");
+  const W = host.clientWidth || 320, H = o.h || 140, m = { l: 8, r: 8, t: 18, b: 18 }, n = o.v.length, bw = (W - m.l - m.r) / n, hi = Math.max(...o.v.map(v => v || 0), 1e-9), base = H - m.b;
+  const fmt = o.fmt || (v => v >= 10 ? String(Math.round(v)) : fr(v, 1)), color = o.color || "var(--pace)", unit = o.unit == null ? "km" : o.unit, showLbl = n <= 16;
+  const Y = v => base - v / hi * (H - m.t - m.b), g = Math.min(1, bw * .12);
+  const bars = o.v.map((v, i) => { const x = m.l + i * bw + g, w = Math.max(1, bw - 2 * g), y = Y(v || 0), h = base - y, q = Math.min(4, h, w / 2); return (v > 0 ? `<path d="M${x} ${base}V${y + q}q0 -${q} ${q} -${q}H${x + w - q}q${q} 0 ${q} ${q}V${base}Z" fill="${color}"/>` + (showLbl ? `<text x="${x + w / 2}" y="${y - 4}" text-anchor="middle" style="fill:var(--ink2)">${fmt(v)}</text>` : "") : "") + `<rect x="${m.l + i * bw}" y="${m.t}" width="${bw}" height="${base - m.t}" fill="transparent" data-i="${i}"/>`; }).join("");
   const xl = o.labels.map((l, i) => i % Math.ceil(n / 6) == 0 ? `<text x="${m.l + i * bw + bw / 2}" y="${H - 4}" text-anchor="middle">${l}</text>` : "").join("");
   host.innerHTML = `<div class="hd"><span class="name">${o.name}</span><span class="val"></span></div><svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="${o.name}"><line x1="${m.l}" x2="${W - m.r}" y1="${base}" y2="${base}" stroke="var(--line)"/>${bars}${xl}</svg>`;
   const val = host.querySelector(".val"), svg = host.querySelector("svg");
-  const at = e => { const i = e.target.dataset && e.target.dataset.i; if (i != null) val.innerHTML = `semaine du ${o.long[i]} · <b>${fr(o.v[i], 1)}</b> km`; };
+  const at = e => { const i = e.target.dataset && e.target.dataset.i; if (i != null) val.innerHTML = `${o.long[i]} · ` + (o.v[i] == null ? "pas de donnée" : `<b>${fmt(o.v[i])}</b> ${unit}`); };
   svg.addEventListener("pointermove", at); svg.addEventListener("pointerdown", at); svg.addEventListener("pointerleave", () => val.innerHTML = "");
 }
 function routeSVG(r) {
@@ -500,11 +694,156 @@ function routeSVG(r) {
   const a = px(P[0]), z = px(P[P.length - 1]);
   const ends = `<circle cx="${z[0]}" cy="${z[1]}" r="6" fill="var(--ink)" stroke="var(--card)" stroke-width="2"/><circle cx="${a[0]}" cy="${a[1]}" r="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>`;
   const sKm = v => pace(3600 / Math.max(v, 3));
-  return `<svg viewBox="0 0 ${W} ${H.toFixed(0)}" style="width:100%;display:block" role="img" aria-label="Tracé GPS coloré selon l'allure">${out}${km}${ends}</svg>
+  return `<svg viewBox="0 0 ${W} ${H.toFixed(0)}" style="width:100%;max-width:520px;display:block" role="img" aria-label="Tracé GPS coloré selon l'allure">${out}${km}${ends}</svg>
   <div class="legend"><span>Lent ${sKm(sp[Math.floor(.1 * sp.length)])}</span>${[1,2,3,4,5].map(i => `<i style="background:var(--q${i})"></i>`).join("")}<span>Rapide ${sKm(sp[Math.floor(.9 * sp.length)])}</span><span style="margin-left:auto">○ départ · ● arrivée</span></div>`;
 }
+// trace une mesure sur une plage : barres pour les totaux, courbe sinon
+function drawMetric(host, d, rows, r, h, prefix) {
+  const color = `var(--c-${d.cat})`, b = buckets(rows, r, d), L = b.list;
+  const lab = k => { const x = dOf(k); return b.mode == "m" ? MC[x.getMonth()] + (L.length > 12 ? " " + String(x.getFullYear()).slice(2) : "") : x.getDate() + "/" + (x.getMonth() + 1); };
+  const lng = k => b.mode == "m" ? MOIS[dOf(k).getMonth()] + " " + k.slice(0, 4) : (b.mode == "w" ? "semaine du " : "") + dShortY(k);
+  let name = d.agg == "sum" ? (b.mode == "d" ? "Total par jour" : "Moyenne par jour, par " + (b.mode == "w" ? "semaine" : "mois")) : d.agg == "mean" ? (b.mode == "d" ? "Moyenne du jour" : "Moyenne par " + (b.mode == "w" ? "semaine" : "mois")) : "Relevés";
+  if (prefix) name = prefix + " · " + name.toLowerCase();
+  if (d.agg == "sum" && L.length <= 45) return barChart(host, { name, v: L.map(x => x.v), labels: L.map(x => lab(x.k)), long: L.map(x => lng(x.k)), color, fmt: v => fmtV(d, v), unit: d.unit, h });
+  const pts = d.agg == "last" ? rows.map(x => [dayN(x[0]), x[1]]) : L.filter(x => x.v != null).map(x => [dayN(x.k), x.v]), d0 = dayN(r[0]), d1 = dayN(r[1]), ax = dayAxis(d0, d1);
+  lineChart(host, { x: [d0, ...pts.map(p => p[0]), d1], y: [null, ...pts.map(p => p[1]), null], join: true, dots: pts.length <= 45, color, fmt: v => fr(v, d.dec), unit: d.unit, xfmt: ax.xfmt, xticks: ax.ticks, name, h: h || 150 });
+}
 
-/* ---------- vues ---------- */
+/* ---------- tableau de bord et catégories ---------- */
+function M(html, narrow) { const m = $("#main"); m.className = narrow ? "col" : ""; m.innerHTML = html; }
+function kpi(key) {
+  const d = MDEF[key], all = series(key), color = `var(--c-${d.cat})`;
+  if (!all.length) return `<button class="mcard" data-go="m-${key}"><span class="hdr"><span class="lbl">${d.label}</span></span><span class="v none">Pas encore de donnée</span><span class="d">${MANUAL.includes(key) ? "À saisir dans Mensurations" : "Importe un export"}</span></button>`;
+  const l = all[all.length - 1], a = inR(all, [addDays(l[0], -6), l[0]]), b = inR(all, [addDays(l[0], -13), addDays(l[0], -7)]);
+  let delta = "Relevé du " + dShortY(l[0]);
+  if (d.agg != "last" && a.length >= 3 && b.length >= 3) { const x = mean(a.map(r => r[1])), y = mean(b.map(r => r[1])), p = y ? (x - y) / y * 100 : 0; delta = `Moy. 7 j : ${fmtV(d, x)} ${d.unit} · ${p > 0 ? "↑ +" : p < 0 ? "↓ −" : ""}${fr(Math.abs(p))} % vs 7 j avant`; }
+  else if (d.agg == "last" && all.length > 1) { const p = l[1] - all[all.length - 2][1]; delta = `${p > 0 ? "+" : p < 0 ? "−" : ""}${fr(Math.abs(p), d.dec)} ${d.unit} depuis le ${dShortY(all[all.length - 2][0])}`; }
+  return `<button class="mcard" data-go="m-${key}"><span class="hdr"><span class="lbl">${d.label} · ${dShortY(l[0])}</span></span><span class="v">${fmtV(d, l[1])}<span class="unit">${d.unit}</span></span>${spark(all.slice(-14), d, color)}<span class="d">${delta}</span></button>`;
+}
+function balance(r) {
+  const inS = new Map(inR(series("kcalIn"), r).map(x => [x[0], x[1]])), outS = new Map(inR(series("total"), r).map(x => [x[0], x[1]])), both = [...inS.keys()].filter(d => outS.has(d));
+  const one = r[0] == r[1], lbl = one ? "le " + dShortY(r[0]) : "en moyenne par jour";
+  if (!both.length) {
+    const why = !inS.size && !outS.size ? "Il manque les deux données sur cette période : saisis tes repas dans Nutrition, et importe un export récent pour la dépense." : !inS.size ? "Aucun apport sur cette période. Saisis tes repas dans Nutrition pour calculer le bilan." : `Tes repas sont saisis, mais la dépense n'est pas connue pour ces jours${DATA && DATA.days ? " : ton export s'arrête au " + dShortY(DATA.exported) + ". Refais un export pour les couvrir" : " : importe un export de l'app Santé"}.`;
+    return `<div class="empty">${why}</div>` + (inS.size ? `<p class="note">Apports saisis : <b>${fr(mean([...inS.values()]))} kcal</b> ${lbl}.</p>` : "");
+  }
+  const i = mean(both.map(d => inS.get(d))), o = mean(both.map(d => outS.get(d))), net = i - o, mx = Math.max(i, o, 1);
+  return `<div class="bal"><span>Apports</span><div><div class="b" style="width:${i / mx * 100}%;background:var(--c-nutrition)"></div></div><span class="n">${fr(i)}</span>
+    <span>Dépenses</span><div><div class="b" style="width:${o / mx * 100}%;background:var(--c-activite)"></div></div><span class="n">${fr(o)}</span></div>
+    <p style="margin:12px 0 0"><span class="num" style="font-size:24px">${net > 0 ? "+" : "−"}${fr(Math.abs(net))}<span class="unit">kcal</span></span> &nbsp;<b>${net > 0 ? "Surplus" : "Déficit"}</b> ${lbl}</p>
+    <p class="note">${one ? "" : `Calculé sur ${both.length} jour${both.length > 1 ? "s" : ""} où apports et dépenses sont tous deux connus. `}Dépenses = énergie au repos + énergie d'activité mesurées par l'iPhone ou la montre.</p>`;
+}
+function viewTableau() {
+  head("Suivi santé · " + dLong(today()), "Tableau de bord");
+  const any = (DATA && DATA.days && Object.keys(DATA.days).length) || MAN.foods.length || MAN.water.length || MAN.measures.length;
+  const hr = series("hr"), st = series("steps"), t = today(), src = hr.length ? hr : st, d = MDEF[hr.length ? "hr" : "steps"];
+  M(demoBanner() + (DATA && !DATA.days && !DEMO ? `<div class="banner"><span>Ton export a été importé avec une ancienne version du site : seule la course est disponible.</span><button class="link" data-go="accueil">Réimporter l'export</button></div>` : "") +
+    (!any ? `<section class="card"><h2>Rien à afficher pour l'instant</h2><p class="sub" style="margin:0 0 12px">Importe l'export de l'app Santé pour remplir les mesures, ou commence par saisir tes repas et tes mensurations.</p><div class="pills"><button class="btn" data-go="accueil">Importer un export</button><button class="btn ghost" data-go="nutrition">Saisir un repas</button><button class="btn ghost" data-go="mensurations">Saisir une mesure</button></div></section>` : "") +
+    `<div class="kpis">${["steps", "total", "rhr", "hrv", "weight"].map(kpi).join("")}</div>
+    <div class="two"><section class="card"><h2>${d.label}</h2><p class="sub">${src.length ? "Les 30 derniers jours de mesure." : "Aucune mesure pour l'instant."}</p><div class="chart" id="c-main"></div></section>
+    <section class="card"><h2>Bilan calorique</h2><p class="sub">Apports contre dépenses, 7 derniers jours.</p>${balance([addDays(t, -6), t])}</section></div>
+    <h2 style="margin:8px 0 0">Catégories</h2><div class="cards">${CATS.map(c => { const dd = MDEF[c.main], s = series(c.main), l = s[s.length - 1], n = c.keys.filter(k => series(k).length).length;
+      return `<button class="mcard catcard" style="--c:var(--c-${c.id})" data-go="${c.id}"><span class="hdr"><span class="lbl" style="color:var(--ink);font-weight:700;font-size:15px">${c.name}</span><span class="tag">${n} / ${c.keys.length} renseignés</span></span>${l ? `<span class="v">${fmtV(dd, l[1])}<span class="unit">${dd.unit}</span></span>` : `<span class="v none">Pas encore de donnée</span>`}<span class="d">${l ? dd.label + " · " + dShortY(l[0]) : dd.label}</span></button>`; }).join("")}
+      <button class="mcard catcard" style="--c:var(--c-course)" data-go="resume"><span class="hdr"><span class="lbl" style="color:var(--ink);font-weight:700;font-size:15px">Course</span><span class="tag">${R.length} sortie${R.length > 1 ? "s" : ""}</span></span>${last ? `<span class="v">${fr(last.dist, 2)}<span class="unit">km</span></span>` : `<span class="v none">Aucune sortie</span>`}<span class="d">${last ? "Dernière sortie · " + dShortY(last.id) : "Analyse détaillée de chaque sortie"}</span></button></div>` + staleNote());
+  if (src.length) { const l = src[src.length - 1][0], r = [addDays(l, -29), l]; drawMetric($("#c-main"), d, inR(src, r), r, 260); }
+}
+const ACT = { Running: "Course à pied", Walking: "Marche", Cycling: "Vélo", Swimming: "Natation", Hiking: "Randonnée", Yoga: "Yoga", FunctionalStrengthTraining: "Renforcement", TraditionalStrengthTraining: "Musculation", HighIntensityIntervalTraining: "Fractionné intense", Elliptical: "Elliptique", Rowing: "Rameur", Soccer: "Football", Tennis: "Tennis", Dance: "Danse", Pilates: "Pilates", CoreTraining: "Gainage", Other: "Autre activité" };
+function viewCat(c) {
+  head("Catégorie · " + perName(), c.name);
+  const r = range(); let top = "", bottom = "";
+  if (c.id == "nutrition") return viewNutrition(r);
+  if (c.id == "activite") {
+    const a = DATA && DATA.acts && DATA.acts.length ? DATA.acts[DATA.acts.length - 1] : null, run = a && a.type == "Running" ? R.find(x => Math.abs(x.t0 - a.t0) < 5) : null;
+    top = `<div class="two"><section class="card"><h2>Dernière activité enregistrée</h2>${a ? `<p class="sub">${ACT[a.type] || esc(a.type)} · ${dLong(a.day)} ${a.day.slice(0, 4)} à ${a.start} · ${esc(a.source)}</p><div class="grid3">${stat("Durée", dur(a.dur))}${a.dist != null ? stat("Distance", fr(a.dist, 2), "km") : ""}${a.kcal != null ? stat("Énergie", a.kcal, "kcal") : ""}${a.hr != null ? stat("FC moyenne", a.hr, "bpm") : ""}</div>${run ? `<button class="link" data-go="seance-${run.id}" style="margin-top:10px">Voir l'analyse de cette sortie</button>` : ""}` : `<div class="empty">Aucune activité enregistrée${DATA && DATA.acts ? " dans l'export" : " : importe un export"}.</div>`}</section>
+      <section class="card"><h2>Bilan calorique</h2><p class="sub">Apports contre dépenses, ${perName().toLowerCase()}.</p>${balance(r)}</section></div>`;
+  }
+  if (c.id == "coeur") { const ev = DATA && DATA.events ? DATA.events : [], af = series("afib");
+    bottom = `<section class="card"><h2>Historique de fibrillation auriculaire</h2>${!af.length && !ev.length ? `<div class="empty">Aucun historique de FA ni notification de rythme irrégulier dans l'export. Ces données demandent une Apple Watch avec la fonction activée.</div>` : `<p class="sub">${af.length ? af.length + " relevé(s) de part du temps en FA. " : ""}${ev.length ? ev.length + " notification(s) de rythme irrégulier." : ""}</p>${ev.length ? `<ul class="read">${ev.slice(-20).reverse().map(x => `<li>${dLong(x)} ${x.slice(0, 4)} · notification de rythme irrégulier</li>`).join("")}</ul>` : ""}`}</section>`; }
+  if (c.id == "vitaux") { const s = inR(series("sys"), r), di = inR(series("dia"), r);
+    top = `<p class="sub" style="margin:0">Vue d'ensemble : ces indicateurs viennent des autres catégories et ouvrent la même fiche détaillée.</p>` + (s.length && di.length ? `<section class="card"><span class="lbl">Tension artérielle, moyenne de la période</span><div class="num" style="font-size:30px">${fr(aggv(MDEF.sys, s))} / ${fr(aggv(MDEF.dia, di))}<span class="unit">mmHg</span></div></section>` : ""); }
+  if (c.id == "mensurations") bottom = measureForm();
+  const mk = [c.main, ...c.keys].find(k => inR(series(k), r).length) || c.main, md = MDEF[mk], mrows = inR(series(mk), r), anyRow = series(mk).length;
+  const chartP = `<section class="card"><div class="phead"><h2>${md.label}</h2><button class="link" data-go="m-${mk}">Détail et historique</button></div><p class="sub">${perName()}.</p>${mrows.length ? `<div class="chart" id="c-main"></div>` : `<div class="empty">${anyRow ? "Aucun relevé sur cette période. Choisis une période plus longue." : c.id == "mensurations" ? "Aucune mesure pour l'instant. Ajoute ta première mesure avec le formulaire." : DATA && DATA.days ? "Aucune de ces mesures n'existe dans ton export. Elles demandent un appareil compatible relié à l'app Santé." : "Importe l'export de l'app Santé pour remplir cette catégorie."}</div>`}</section>`;
+  const latest = `<section class="card"><h2>Derniers relevés</h2><p class="sub">Valeur la plus récente de chaque indicateur, quelle que soit la période.</p><div class="scroll"><table><thead><tr><th>Indicateur</th><th>Valeur</th><th>Date</th></tr></thead><tbody>${c.keys.map(k => { const d = MDEF[k], s = series(k), l = s[s.length - 1]; return `<tr><td class="wrapc"><button class="link" data-go="m-${k}" style="padding:0;text-align:left">${d.label}</button></td><td>${l ? `<span class="num">${fmtV(d, l[1])}</span> ${d.unit}` : "–"}</td><td>${l ? dShortY(l[0]) : "Pas de donnée"}</td></tr>`; }).join("")}</tbody></table></div></section>`;
+  const split = x => { const i = x.indexOf("</section>") + 10; return [x.slice(0, i), x.slice(i)]; };
+  let side = latest, below = "";
+  if (c.id == "activite") { const inner = top.replace(/^<div class="two">/, "").replace(/<\/div>$/, ""), p = split(inner); side = p[1]; below = `<div class="two">${p[0]}${latest}</div>`; top = ""; }
+  else if (c.id == "coeur" || c.id == "mensurations") { side = bottom; below = latest; bottom = ""; }
+  M(demoBanner() + perChips() + (c.id == "vitaux" ? top : "") + `<div class="cards">${c.keys.map(k => mcard(k, r, c.id == "vitaux" ? "vitaux" : null)).join("")}</div><div class="two">${chartP}${side}</div>` + below + staleNote());
+  if (mrows.length) {
+    const hours = per == "today" && DATA && DATA.hours && DATA.hours[mk] && DATA.exported == today() ? DATA.hours[mk] : null, color = `var(--c-${md.cat})`, host = $("#c-main");
+    if (hours && md.agg == "sum") barChart(host, { name: "Par heure, aujourd'hui", v: hours, labels: hours.map((_, i) => i + " h"), long: hours.map((_, i) => i + " h – " + (i + 1) + " h"), color, fmt: v => fmtV(md, v), unit: md.unit, h: 260 });
+    else if (hours) lineChart(host, { x: hours.map((_, i) => i), y: hours, join: true, dots: true, color, fmt: v => fr(v, md.dec), unit: md.unit, xfmt: v => v + " h", xticks: [0, 6, 12, 18, 23], name: "Moyenne par heure, aujourd'hui", h: 260 });
+    else if (mrows.length == 1) host.innerHTML = `<div class="empty">Un seul relevé sur cette période : <b>${fmtV(md, mrows[0][1])} ${md.unit}</b> le ${dShortY(mrows[0][0])}. Choisis une période plus longue pour voir l'évolution.</div>`;
+    else drawMetric(host, md, mrows, per == "all" ? [series(mk)[0][0], r[1]] : r, 260);
+  }
+}
+function measureForm() {
+  const mine = MAN.measures.slice().sort((a, b) => a.day < b.day ? 1 : -1);
+  return `<section class="card"><h2>Ajouter une mesure</h2><div class="form">
+    <label>Mesure<select id="ms-key">${MANUAL.map(k => `<option value="${k}">${MDEF[k].label} (${MDEF[k].unit})</option>`).join("")}</select></label>
+    <label>Valeur<input id="ms-v" inputmode="decimal" placeholder="ex. 82,5"></label>
+    <label>Date<input id="ms-day" type="date" value="${today()}" max="${today()}"></label>
+    <button class="btn" data-act="measure-add">Enregistrer</button></div><p class="note" id="ms-msg"></p>
+    ${mine.length ? `<h3>Mes saisies</h3><div class="scroll"><table><tbody>${mine.slice(0, 40).map(x => `<tr><td>${dShortY(x.day)}</td><td class="wrapc" style="text-align:left">${MDEF[x.key].label}</td><td><span class="num">${fr(x.v, MDEF[x.key].dec)}</span> ${MDEF[x.key].unit}</td><td><div class="rowact"><button class="icon" data-act="measure-del" data-id="${x.id}">Supprimer</button></div></td></tr>`).join("")}</tbody></table></div>` : ""}</section>`;
+}
+const MEALS = [["pdj", "Petit-déjeuner"], ["dej", "Déjeuner"], ["col", "Collation"], ["din", "Dîner"]];
+function viewNutrition(r) {
+  const day = nutDay || today(), foods = MAN.foods.filter(f => f.day == day), tot = foods.reduce((s, f) => s + f.kcal, 0), waters = MAN.water.filter(w => w.day == day), wt = waters.reduce((s, w) => s + w.ml, 0), ed = editId ? MAN.foods.find(f => f.id == editId) : null;
+  const impOf = k => DATA && DATA.days && DATA.days[k] ? DATA.days[k].find(x => x[0] == day) : null, impK = impOf("kcalImp"), impW = impOf("waterImp");
+  const hist = new Map(); series("kcalIn").forEach(x => hist.set(x[0], { k: x[1], ks: x[2] })); series("water").forEach(x => { const h = hist.get(x[0]) || {}; h.w = x[1]; h.ws = x[2]; hist.set(x[0], h); });
+  const hl = [...hist].sort((a, b) => a[0] < b[0] ? 1 : -1).slice(0, 30), pct = Math.min(100, wt / MAN.goal * 100);
+  M(`<div class="daynav"><button class="btn ghost sm" data-act="nut-day" data-d="-1" aria-label="Jour précédent">←</button><input type="date" id="nut-date" value="${day}" max="${today()}" aria-label="Jour affiché"><button class="btn ghost sm" data-act="nut-day" data-d="1" aria-label="Jour suivant" ${day >= today() ? "disabled" : ""}>→</button><b>${day == today() ? "Aujourd'hui" : dLong(day) + " " + day.slice(0, 4)}</b></div>
+  <div class="two"><section class="card"><h2>Repas</h2>
+    <div class="num" style="font-size:34px">${fr(tot)}<span class="unit">kcal consommées</span></div>
+    ${!foods.length && impK ? `<p class="note">Aucun repas saisi ce jour-là. L'app Santé indique ${fr(impK[1])} kcal <span class="tag">Mesuré</span></p>` : ""}
+    ${MEALS.map(([k, n]) => { const fs = foods.filter(f => f.meal == k); return `<h3>${n}${fs.length ? " · " + fr(fs.reduce((s, f) => s + f.kcal, 0)) + " kcal" : ""}</h3>` + (fs.length ? `<div class="scroll"><table><tbody>${fs.map(f => `<tr><td class="wrapc">${escU(f.name)}${f.qty ? ` <span style="color:var(--ink2)">· ${escU(f.qty)}</span>` : ""}</td><td><span class="num">${fr(f.kcal)}</span> kcal</td><td><div class="rowact"><button class="icon" data-act="food-edit" data-id="${f.id}">Modifier</button><button class="icon" data-act="food-del" data-id="${f.id}">Supprimer</button></div></td></tr>`).join("")}</tbody></table></div>` : `<p class="note" style="margin:0">Rien de saisi.</p>`); }).join("")}
+    <h3>${ed ? "Modifier l'aliment" : "Ajouter un aliment"}</h3><div class="form">
+      <label>Repas<select id="fd-meal">${MEALS.map(([k, n]) => `<option value="${k}" ${ed && ed.meal == k ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+      <label>Aliment<input id="fd-name" value="${ed ? escU(ed.name) : ""}" placeholder="ex. Riz complet"></label>
+      <label>Quantité<input id="fd-qty" value="${ed ? escU(ed.qty) : ""}" placeholder="ex. 150 g"></label>
+      <label>Calories (kcal)<input id="fd-kcal" inputmode="decimal" value="${ed ? ed.kcal : ""}" placeholder="ex. 180"></label>
+      <button class="btn" data-act="food-save">${ed ? "Enregistrer" : "Ajouter"}</button>${ed ? `<button class="btn ghost" data-act="food-cancel">Annuler</button>` : ""}</div><p class="note" id="fd-msg"></p></section>
+  <section class="card"><h2>Hydratation</h2>
+    <div class="num" style="font-size:34px">${wt >= 1000 ? fr(wt / 1000, 2) : fr(wt)}<span class="unit">${wt >= 1000 ? "L" : "ml"} sur ${fr(MAN.goal / 1000, 1)} L</span></div>
+    <div class="prog" style="margin:10px 0" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}" aria-label="Progression vers le repère d'hydratation"><i style="width:${pct}%;background:var(--c-respiration);transition:none"></i></div>
+    ${!waters.length && impW ? `<p class="note">Rien de saisi ce jour-là. L'app Santé indique ${fr(impW[1])} ml <span class="tag">Mesuré</span></p>` : ""}
+    <div class="pills">${[150, 250, 500].map(v => `<button class="btn ghost sm" data-act="water-add" data-ml="${v}">+ ${v} ml</button>`).join("")}</div>
+    <div class="form" style="margin-top:10px"><label>Autre quantité (ml)<input id="wt-ml" inputmode="numeric" placeholder="ex. 330"></label><button class="btn sm" data-act="water-custom">Ajouter</button></div>
+    ${waters.length ? `<h3>Ajouts du jour</h3><div class="scroll"><table><tbody>${waters.map(w => `<tr><td>${w.t || ""}</td><td><span class="num">${fr(w.ml)}</span> ml</td><td><div class="rowact"><button class="icon" data-act="water-del" data-id="${w.id}">Supprimer</button></div></td></tr>`).join("")}</tbody></table></div>` : ""}
+    <div class="form" style="margin-top:12px"><label>Repère quotidien (ml)<input id="wt-goal" inputmode="numeric" value="${MAN.goal}"></label><button class="btn ghost sm" data-act="goal-set">Modifier</button></div>
+    <p class="note">Le repère de 2 L est un point de départ courant : règle-le selon tes besoins.</p></section></div>
+  <section class="card"><h2>Historique</h2>${perChips()}<div class="chart" id="c-kcal" style="margin-top:14px"></div><div class="chart" id="c-water" style="margin-top:18px"></div>
+    ${hl.length ? `<h3>Jours enregistrés</h3><div class="scroll"><table><thead><tr><th>Jour</th><th>Calories</th><th>Eau</th><th></th></tr></thead><tbody>${hl.map(([d, h]) => `<tr><td>${dShortY(d)}</td><td>${h.k != null ? `<span class="num">${fr(h.k)}</span> kcal ${h.ks == "a" ? `<span class="tag">Mesuré</span>` : ""}` : "–"}</td><td>${h.w != null ? `<span class="num">${fr(h.w)}</span> ml ${h.ws == "a" ? `<span class="tag">Mesuré</span>` : ""}` : "–"}</td><td><div class="rowact"><button class="icon" data-act="nut-open" data-day="${d}">Ouvrir</button></div></td></tr>`).join("")}</tbody></table></div>` : `<p class="note">L'historique apparaîtra dès ta première saisie.</p>`}</section>`);
+  const dt = $("#nut-date"); dt.onchange = () => { if (dt.value) { nutDay = dt.value > today() ? today() : dt.value; editId = null; render(true); } };
+  [["kcalIn", "#c-kcal"], ["water", "#c-water"]].forEach(([k, id]) => { const all = series(k), rows = inR(all, r); if (rows.length) drawMetric($(id), MDEF[k], rows, per == "all" ? [all[0][0], r[1]] : r, 130, MDEF[k].label); else $(id).innerHTML = `<div class="hd"><span class="name">${MDEF[k].label}</span><span class="val">rien sur cette période</span></div>`; });
+}
+function viewMetric(key) {
+  const d = MDEF[key], c = CAT[d.cat], all = series(key); let r = range(); const rows = inR(all, r), lastRow = all[all.length - 1];
+  if (per == "all" && all.length) r = [all[0][0], r[1]];
+  head(c.name + " · " + perName(), d.label);
+  const hours = per == "today" && DATA && DATA.hours && DATA.hours[key] && DATA.exported == today() ? DATA.hours[key] : null;
+  let body;
+  if (rows.length) {
+    const vs = rows.map(x => x[1]), mx = rows.reduce((a, b) => b[1] > a[1] ? b : a), mn = rows.reduce((a, b) => b[1] < a[1] ? b : a), u = d.unit;
+    const stats = d.agg == "sum" ? stat("Total", fmtV(d, vs.reduce((a, b) => a + b, 0)), u) + stat("Moyenne par jour", fmtV(d, mean(vs)), u) + stat("Jour le plus haut", fmtV(d, mx[1]), u)
+      : d.agg == "mean" ? stat("Moyenne", fr(mean(vs), d.dec), u) + stat("Plus bas", fr(mn[1], d.dec), u) + stat("Plus haut", fr(mx[1], d.dec), u)
+      : stat("Dernier relevé", fr(vs[vs.length - 1], d.dec), u) + stat("Plus bas", fr(mn[1], d.dec), u) + stat("Plus haut", fr(mx[1], d.dec), u);
+    body = `<section class="card"><div class="grid3" style="margin-bottom:14px">${stats}</div><div class="chart" id="c-m"></div>${rows.length == 1 && !hours ? `<p class="note">Un seul relevé sur cette période : choisis une période plus longue pour voir l'évolution.</p>` : ""}</section>
+    <section class="card"><h2>Historique</h2><div class="scroll"><table><thead><tr><th>Jour</th><th>${d.agg == "sum" ? "Total" : d.agg == "mean" ? "Moyenne" : "Relevé"}</th><th>Origine</th></tr></thead><tbody>${rows.slice().reverse().slice(0, 60).map(x => `<tr><td>${dShortY(x[0])}</td><td><span class="num">${fmtV(d, x[1])}</span> ${d.unit}</td><td>${srcTag([x])}</td></tr>`).join("")}</tbody></table></div>${rows.length > 60 ? `<p class="note">Les 60 jours les plus récents sur ${rows.length}.</p>` : ""}</section>`;
+  } else body = `<div class="empty">${lastRow ? `Aucun relevé sur cette période. Dernier relevé le ${dShortY(lastRow[0])} : <b>${fmtV(d, lastRow[1])} ${d.unit}</b>. Choisis une période plus longue pour le voir.` : MANUAL.includes(key) ? "Aucune donnée pour l'instant. Ajoute une mesure dans Mensurations." : d.cat == "nutrition" ? "Aucune donnée pour l'instant. Saisis tes repas et ton eau dans Nutrition." : DATA && DATA.days ? "Cette mesure n'existe pas dans ton export. Elle demande un appareil compatible relié à l'app Santé (montre, balance, tensiomètre ou autre capteur)." : "Importe l'export de l'app Santé pour remplir cette mesure."}</div>`;
+  M(`<button class="back" data-go="${c.id}">← ${c.name}</button>` + perChips() + body + staleNote());
+  if (!rows.length) return;
+  const color = `var(--c-${d.cat})`;
+  if (hours && d.agg == "sum") barChart($("#c-m"), { name: "Par heure, aujourd'hui", v: hours, labels: hours.map((_, i) => i + " h"), long: hours.map((_, i) => i + " h – " + (i + 1) + " h"), color, fmt: v => fmtV(d, v), unit: d.unit, h: 190 });
+  else if (hours) lineChart($("#c-m"), { x: hours.map((_, i) => i), y: hours, join: true, dots: true, color, fmt: v => fr(v, d.dec), unit: d.unit, xfmt: v => v + " h", xticks: [0, 6, 12, 18, 23], name: "Moyenne par heure, aujourd'hui", h: 190 });
+  else drawMetric($("#c-m"), d, rows, r, 200);
+}
+
+/* ---------- course ---------- */
+const courseTabs = cur => `<div class="chips" role="group" aria-label="Vues de la course">${[["resume", "Résumé"], ["seances", "Séances"], ["forme", "Forme"]].map(([k, l]) => `<button data-go="${k}" aria-pressed="${cur == k}">${l}</button>`).join("")}</div>`;
+const noRuns = () => `<section class="card"><h2>Aucune sortie de course</h2><p class="sub" style="margin:0 0 12px">${DATA ? "Ton export ne contient pas de sortie de course à pied d'au moins 500 m." : "Importe l'export de l'app Santé pour analyser tes sorties."}</p><div class="pills"><button class="btn" data-go="accueil">Importer un export</button><button class="btn ghost" data-act="demo">Voir un exemple fictif</button></div></section>`;
+const demoBanner = () => DEMO ? `<div class="banner"><span><b>Exemple fictif.</b> Ces sorties sont inventées et ne couvrent que la course.</span><button class="link" data-go="accueil">Importer mon export</button></div>` : "";
 function readRun(r) {
   const full = r.splits.filter(s => s.dist >= .99), out = [];
   if (full.length >= 2) {
@@ -521,16 +860,16 @@ function readRun(r) {
   if (!out.length) out.push("Sortie trop courte pour en tirer une lecture.");
   return out;
 }
-
 function viewRun(r) {
+  head("Course · " + dLong(r.id) + " " + r.id.slice(0, 4), "Sortie de " + fr(r.dist, 2) + " km");
   const S = r.series, xfmt = (v, long) => long ? dur(v) : Math.round(v / 60) + " min";
   const step = r.dur > 9000 ? 1800 : r.dur > 4200 ? 1200 : r.dur > 1500 ? 600 : 300, xt = []; for (let v = step; v < S.t[S.t.length - 1]; v += step) xt.push(v);
   const full = r.splits.filter(s => s.dist >= .99), fast = full.length ? Math.min(...full.map(s => s.pace)) : -1, all = r.splits.map(s => s.pace), slow = Math.max(...all), fastAll = Math.min(...all);
   const hasEle = r.splits.length && r.splits[0].dEle != null, hasPow = r.splits.some(s => s.power != null), hasHr = r.hrAvg != null;
   const ex = [["Dénivelé +", r.elev, "m"], ["Calories", r.kcal, "kcal"], ["Puissance", r.power == null ? null : fr(r.power), "W"], ["Cadence", r.cad, "pas/min"], ["Foulée", r.stride == null ? null : fr(r.stride, 2), "m"], ["Contact sol", r.gct == null ? null : fr(r.gct), "ms"], ["Oscillation", r.vo == null ? null : fr(r.vo, 1), "cm"], ["FC max", r.hrMax, "bpm"]].filter(e => e[1] != null).map(e => stat(...e));
   const zt = r.zones ? r.zones.reduce((a, b) => a + b, 0) : 0, zm = r.zones ? Math.max(...r.zones) : 0;
-  $("#main").innerHTML = `<button class="back" id="back">← Toutes les séances</button>
-  <section class="hero"><div class="lbl">${dLong(r.id)} ${r.id.slice(0, 4)} · ${r.start} · ${esc(r.source)}</div>
+  M(`<button class="back" data-go="seances">← Toutes les séances</button>
+  <section class="hero"><div class="lbl">${r.start} · ${esc(r.source)}</div>
     <div class="big">${fr(r.dist, 2)}<span class="unit" style="font-size:.3em">km</span></div>
     <div class="row">${stat("Durée", dur(r.dur))}${stat("Allure", pace(r.pace), "/km")}${stat("FC moy.", r.hrAvg ?? "–", hasHr ? "bpm" : "")}</div></section>
   <section class="card"><h2>Lecture de la séance</h2><ul class="read">${readRun(r).map(t => `<li>${t}</li>`).join("")}</ul></section>
@@ -538,33 +877,29 @@ function viewRun(r) {
   <section class="card"><h2>Kilomètre par kilomètre</h2><div class="scroll"><table><thead><tr><th>Km</th><th></th><th>Allure</th>${hasHr ? "<th>FC</th>" : ""}${hasEle ? "<th>Déniv.</th>" : ""}${hasPow ? "<th>Watts</th>" : ""}</tr></thead><tbody>
     ${r.splits.map(s => `<tr><td><span class="num">${s.dist >= .99 ? s.km : fr(s.dist, 2)}</span></td><td class="barcell"><div class="bar${s.pace == fast && s.dist >= .99 ? " best" : ""}" style="width:${Math.round(40 + 60 * (slow - s.pace) / Math.max(slow - fastAll, 1))}%"></div></td><td><span class="num">${pace(s.pace)}</span></td>${hasHr ? `<td>${s.hr ?? "–"}</td>` : ""}${hasEle ? `<td>${s.dEle > 0 ? "+" : ""}${fr(s.dEle)} m</td>` : ""}${hasPow ? `<td>${s.power ?? "–"}</td>` : ""}</tr>`).join("")}
   </tbody></table></div><p class="note">Barre plus longue = kilomètre plus rapide. Le kilomètre complet le plus rapide est encadré.${r.splits.length && r.splits[r.splits.length - 1].dist < .99 ? " La dernière ligne est un kilomètre incomplet." : ""}</p></section>
-  <section class="card"><h2>Courbes</h2><p class="sub">Glisse le doigt sur une courbe pour les lire toutes au même instant.</p>
+  <section class="card"><h2>Courbes</h2><p class="sub">Glisse le doigt ou la souris sur une courbe pour les lire toutes au même instant.</p>
     <div class="chart" id="c-pace"></div>${hasHr ? `<div class="chart" id="c-hr"></div>` : ""}${hasPow ? `<div class="chart" id="c-pow"></div>` : ""}${S.ele ? `<div class="chart" id="c-ele"></div>` : ""}
     ${hasHr && r.hrFirst > 60 ? `<p class="note">La fréquence cardiaque n'a été relevée qu'à partir de ${dur(r.hrFirst)} : le début de la courbe est vide.</p>` : ""}</section>
   ${r.zones ? `<section class="card"><h2>Zones cardiaques</h2>
     ${r.zones.map((v, i) => `<div class="zone"><span class="zl"><b>${ZN[i]}</b>${zr(r, i)}</span><div><div class="zbar" style="width:${zm ? v / zm * 100 : 0}%;background:var(--q${i + 1})"></div></div><span class="zt"><b>${dur(v)}</b> · ${fr(zt ? v / zt * 100 : 0)} %</span></div>`).join("")}
     <p class="note">${r.zonesEst ? "Seuils estimés à 60, 70, 80 et 90 % de la fréquence la plus haute relevée sur tes sorties, faute de zones dans l'export." : "Seuils en bpm, ceux réglés sur la montre."} ${r.zonesApple ? "Durées calculées par l'Apple Watch." : "Durées recalculées à partir des relevés."}</p></section>` : ""}
-  ${ex.length ? `<section class="card"><h2>Détails</h2><div class="grid3">${ex.join("")}</div></section>` : ""}`;
-  $("#back").onclick = () => go("seances");
+  ${ex.length ? `<section class="card"><h2>Détails</h2><div class="grid3">${ex.join("")}</div></section>` : ""}`, true);
   const g = [];
   lineChart($("#c-pace"), { x: S.t, y: S.pace, color: "var(--pace)", invert: true, fmt: pace, unit: "/km", xfmt, xticks: xt, name: "Allure", defText: `moy. <b>${pace(r.pace)}</b> /km` }, g);
   if (hasHr) lineChart($("#c-hr"), { x: S.t, y: S.hr, color: "var(--hr)", fmt: v => Math.round(v), unit: "bpm", xfmt, xticks: xt, name: "FC", defText: `moy. <b>${r.hrAvg}</b> · max <b>${r.hrMax}</b> bpm` }, g);
   if (hasPow) lineChart($("#c-pow"), { x: S.t, y: S.power, color: "var(--pow)", fmt: v => Math.round(v), unit: "W", xfmt, xticks: xt, name: "Puissance", defText: `moy. <b>${fr(r.power)}</b> W` }, g);
   if (S.ele) lineChart($("#c-ele"), { x: S.t, y: S.ele, color: "var(--ele)", area: true, fmt: v => Math.round(v), unit: "m", xfmt, xticks: xt, name: "Altitude", h: 92, defText: r.elev != null ? `D+ <b>${r.elev}</b> m` : "" }, g);
 }
-
-const runRow = r => `<button class="runrow" data-run="${r.id}"><span><span class="d">${dLong(r.id)}${r.id.slice(0, 4) != last.id.slice(0, 4) ? " " + r.id.slice(0, 4) : ""}</span><br><span class="m">${r.start} · ${esc(r.source)}</span></span><span class="k">${fr(r.dist, 2)}<span class="unit" style="font-size:.4em">km</span></span><span class="go"><span><b>${dur(r.dur)}</b></span><span><b>${pace(r.pace)}</b> /km</span>${r.hrAvg ? `<span><b>${r.hrAvg}</b> bpm</span>` : ""}<span style="margin-left:auto">Détail →</span></span></button>`;
-const bindRows = () => document.querySelectorAll("[data-run]").forEach(b => b.onclick = () => go("seance-" + b.dataset.run));
-const demoBanner = () => DEMO ? `<div class="banner"><span><b>Exemple fictif.</b> Ces sorties sont inventées.</span><button class="link" id="b-own">Importer mon export</button></div>` : "";
-const bindBanner = () => { const b = $("#b-own"); if (b) b.onclick = () => go("accueil"); };
-
+const runRow = r => `<button class="runrow" data-go="seance-${r.id}"><span><span class="d">${dLong(r.id)}${r.id.slice(0, 4) != last.id.slice(0, 4) ? " " + r.id.slice(0, 4) : ""}</span><br><span class="m">${r.start} · ${esc(r.source)}</span></span><span class="k">${fr(r.dist, 2)}<span class="unit" style="font-size:.4em">km</span></span><span class="go"><span><b>${dur(r.dur)}</b></span><span><b>${pace(r.pace)}</b> /km</span>${r.hrAvg ? `<span><b>${r.hrAvg}</b> bpm</span>` : ""}<span style="margin-left:auto">Détail →</span></span></button>`;
 function viewSeances() {
+  head("Course · " + R.length + " sortie" + (R.length > 1 ? "s" : ""), "Séances");
+  if (!R.length) return M(courseTabs("seances") + noRuns(), true);
   const list = R.slice().reverse();
-  $("#main").innerHTML = demoBanner() + `<p class="sub" style="margin:0">${R.length} sortie${R.length > 1 ? "s" : ""}, de la plus récente à la plus ancienne.</p>` + list.slice(0, shown).map(runRow).join("") + (list.length > shown ? `<button class="btn ghost" id="more">Afficher les suivantes</button>` : "");
-  bindRows(); bindBanner(); const m = $("#more"); if (m) m.onclick = () => { shown += 40; viewSeances(); };
+  M(courseTabs("seances") + demoBanner() + list.slice(0, shown).map(runRow).join("") + (list.length > shown ? `<button class="btn ghost" data-act="more">Afficher les suivantes</button>` : ""), true);
 }
-
 function viewResume() {
+  head("Course · " + (R.length ? dShortY(R[0].id) + " – " + dShortY(last.id) : "aucune sortie"), "Résumé de la course");
+  if (!R.length) return M(courseTabs("resume") + noRuns(), true);
   const km = R.reduce((s, r) => s + r.dist, 0), t = R.reduce((s, r) => s + r.dur, 0);
   const b1 = R.filter(r => r.best1k).sort((a, b) => a.best1k.time - b.best1k.time)[0], b5 = R.filter(r => r.best5k).sort((a, b) => a.best5k - b.best5k)[0];
   const lg = R.slice().sort((a, b) => b.dist - a.dist)[0], fp = R.slice().sort((a, b) => a.pace - b.pace)[0];
@@ -577,7 +912,7 @@ function viewResume() {
     ${rows.map(([l, f]) => `<tr><td>${l}</td><td class="r"><span class="num">${f(prev)}</span></td><td class="r"><span class="num">${f(last)}</span></td></tr>`).join("")}</tbody></table>
     <div class="chart" id="c-cmp" style="margin-top:16px"></div>
     <p class="note">Mètres par battement = distance parcourue à chaque battement de cœur. Plus le chiffre monte d'une sortie à l'autre sur un parcours comparable, plus tu es efficace.</p></section>`; }
-  $("#main").innerHTML = demoBanner() + `<section class="hero"><div class="lbl">Total couru</div><div class="big">${fr(km, km >= 1000 ? 0 : 1)}<span class="unit" style="font-size:.3em">km</span></div>
+  M(courseTabs("resume") + demoBanner() + `<section class="hero"><div class="lbl">Total couru</div><div class="big">${fr(km, km >= 1000 ? 0 : 1)}<span class="unit" style="font-size:.3em">km</span></div>
     <div class="row">${stat("Sorties", R.length)}${stat("Temps", dur(t))}${stat("Allure moy.", pace(t / km), "/km")}</div></section>
   <section><h2 style="margin:6px 0 10px">Dernière sortie</h2>${runRow(last)}</section>
   <section class="card"><h2>Volume</h2><div class="chart" id="c-week"></div>${R.length >= 4 ? `<div class="chart" id="c-trend" style="margin-top:20px"></div><p class="note">Un point par sortie. Plus haut = plus rapide.</p>` : ""}</section>
@@ -585,21 +920,18 @@ function viewResume() {
   <section class="card"><h2>Records</h2><div class="grid2">
     ${stat("Meilleur km", b1 ? pace(b1.best1k.time) : "–")}${stat("Meilleur 5 km", b5 ? dur(b5.best5k) : "–")}
     ${stat("Plus longue sortie", fr(lg.dist, 2), "km")}${stat("Meilleure allure moy.", pace(fp.pace), "/km")}</div>
-    <p class="note">${b1 ? "Meilleur km le " + dShort(b1.id) + ", " : ""}${b5 ? "meilleur 5 km le " + dShort(b5.id) + ", " : ""}plus longue sortie le ${dShort(lg.id)}, meilleure allure moyenne le ${dShort(fp.id).replace(/\.$/, "")}.</p></section>`;
-  bindRows(); bindBanner();
-  // 12 semaines jusqu'à la dernière sortie
+    <p class="note">${b1 ? "Meilleur km le " + dShort(b1.id) + ", " : ""}${b5 ? "meilleur 5 km le " + dShort(b5.id) + ", " : ""}plus longue sortie le ${dShort(lg.id)}, meilleure allure moyenne le ${dShort(fp.id).replace(/\.$/, "")}.</p></section>`, true);
   const mon = d => { const x = new Date(d); x.setDate(x.getDate() - (x.getDay() + 6) % 7); x.setHours(12, 0, 0, 0); return x; };
   const w0 = mon(dOf(last.id)), weeks = []; for (let i = 11; i >= 0; i--) { const d = new Date(w0); d.setDate(d.getDate() - 7 * i); weeks.push(d); }
   const v = weeks.map(w => R.reduce((s, r) => { const d = (dOf(r.id) - w) / 864e5; return s + (d > -.5 && d < 6.5 ? r.dist : 0); }, 0));
-  barChart($("#c-week"), { name: "Kilomètres par semaine", v, labels: weeks.map(d => d.getDate() + "/" + (d.getMonth() + 1)), long: weeks.map(d => d.getDate() + " " + MC[d.getMonth()]) });
+  barChart($("#c-week"), { name: "Kilomètres par semaine", v, labels: weeks.map(d => d.getDate() + "/" + (d.getMonth() + 1)), long: weeks.map(d => "semaine du " + d.getDate() + " " + MC[d.getMonth()]) });
   if (R.length >= 4) { const rs = R.slice(-60), x = rs.map(r => dayN(r.id)), ax = dayAxis(x[0], x[x.length - 1]);
     lineChart($("#c-trend"), { x, y: rs.map(r => r.pace), color: "var(--pace)", invert: true, dots: true, fmt: pace, unit: "/km", xfmt: ax.xfmt, xticks: ax.ticks, name: "Allure moyenne par sortie", h: 130 }); }
   if (prev) cmpChart($("#c-cmp"), prev, last);
 }
-
 // allure des deux dernières sorties, superposée sur la distance (même axe, même unité)
 function cmpChart(host, a, b) {
-  const W = host.clientWidth || 320, H = 150, m = { l: 36, r: 10, t: 8, b: 18 };
+  const W = host.clientWidth || 320, H = 150, m = { l: 40, r: 10, t: 8, b: 18 };
   const ser = [a, b].map(r => r.series.km.map((k, i) => [k, r.series.pace[i]]).filter(p => p[1] != null && p[0] > .08));
   const all = ser.flat(); if (all.length < 4) { host.innerHTML = ""; return; }
   const xmax = Math.max(...all.map(p => p[0]));
@@ -614,7 +946,7 @@ function cmpChart(host, a, b) {
   <g class="ch" style="display:none"><line y1="${m.t}" y2="${H - m.b}" stroke="var(--ink2)"/><circle r="4.5" fill="${cols[0]}" stroke="var(--card)" stroke-width="2"/><circle r="4.5" fill="${cols[1]}" stroke="var(--card)" stroke-width="2"/></g></svg>
   <div class="legend"><span class="dot" style="background:${cols[0]}"></span>${dShort(a.id)}<span class="dot" style="background:${cols[1]};margin-left:10px"></span>${dShort(b.id)}<span style="margin-left:auto">plus haut = plus rapide</span></div>`;
   const svg = host.querySelector("svg"), ch = host.querySelector(".ch"), val = host.querySelector(".val"), cs = ch.querySelectorAll("circle"), ln = ch.querySelector("line");
-  const near = (s, k) => s.reduce((b, p) => Math.abs(p[0] - k) < Math.abs(b[0] - k) ? p : b, s[0]);
+  const near = (s, k) => s.reduce((bb, p) => Math.abs(p[0] - k) < Math.abs(bb[0] - k) ? p : bb, s[0]);
   const at = e => { const r = svg.getBoundingClientRect(), k = Math.max(0, Math.min(xmax, ((e.clientX - r.left) / r.width * W - m.l) / (W - m.l - m.r) * xmax));
     ch.style.display = ""; ln.setAttribute("x1", X(k)); ln.setAttribute("x2", X(k));
     const txt = ser.map((s, i) => { const p = s.length ? near(s, k) : null, ok = p && Math.abs(p[0] - k) < .1; cs[i].style.display = ok ? "" : "none"; if (ok) { cs[i].setAttribute("cx", X(p[0])); cs[i].setAttribute("cy", Y(p[1])); } return `<span class="dot" style="background:${cols[i]}"></span><b>${ok ? pace(p[1]) : "–"}</b>`; });
@@ -622,61 +954,57 @@ function cmpChart(host, a, b) {
   svg.addEventListener("pointermove", at); svg.addEventListener("pointerdown", at);
   svg.addEventListener("pointerleave", () => { ch.style.display = "none"; val.innerHTML = ""; });
 }
-
 function viewForme() {
-  const T = DATA.trend;
+  head("Course · forme générale", "Forme");
+  const T = DATA && DATA.trend ? DATA.trend : {};
   const defs = [["vo2", "VO2 max estimée", "ml/kg/min", "var(--pace)", 1, "Estimation de l'Apple Watch après une marche ou une course en extérieur. Plus elle est haute, mieux c'est."],
                 ["rhr", "Fréquence cardiaque au repos", "bpm", "var(--hr)", 0, "Moyenne par semaine. Une baisse dans la durée va de pair avec une meilleure condition."],
                 ["hrv", "Variabilité cardiaque", "ms", "var(--pow)", 0, "Moyenne par semaine des relevés de la montre (SDNN). Très variable d'une semaine à l'autre : regarde la tendance."]].filter(d => T[d[0]] && T[d[0]].length >= 2);
-  if (!defs.length) { $("#main").innerHTML = demoBanner() + `<section class="card"><h2>Pas de mesure de forme</h2><p class="note" style="margin:0">L'export ne contient ni VO2 max, ni fréquence cardiaque au repos, ni variabilité cardiaque. Ces mesures viennent d'une Apple Watch.</p></section>`; bindBanner(); return; }
+  if (!defs.length) return M(courseTabs("forme") + demoBanner() + `<section class="card"><h2>Pas de mesure de forme</h2><p class="note" style="margin:0">Aucune VO2 max, fréquence cardiaque au repos ni variabilité cardiaque à afficher. Ces mesures viennent d'une Apple Watch.</p></section>`, true);
   const first = Math.min(...defs.map(d => dayN(T[d[0]][0][0]))), end = Math.max(dayN(DATA.exported), ...defs.map(d => dayN(T[d[0]][T[d[0]].length - 1][0]))), ax = dayAxis(first, end);
-  $("#main").innerHTML = demoBanner() + `<p class="sub" style="margin:0">Ce que la montre mesure en dehors des sorties. Les traits pointillés marquent les jours de course.</p>` +
+  M(courseTabs("forme") + demoBanner() + `<p class="sub" style="margin:0">Ce que la montre mesure en dehors des sorties. Les traits pointillés marquent les jours de course.</p>` +
     defs.map(([k, n, u, c, dec, txt]) => { const a = T[k], f = a[0][1], l = a[a.length - 1][1], d = l - f;
-      return `<section class="card"><h2>${n}</h2><div class="grid3" style="margin-bottom:12px">${stat("Début", fr(f, dec))}${stat("Dernier relevé", fr(l, dec))}${stat("Évolution", (d > 0 ? "+" : d < 0 ? "−" : "") + fr(Math.abs(d), dec))}</div><div class="chart" id="c-${k}"></div><p class="note">${txt}</p></section>`; }).join("");
-  bindBanner();
+      return `<section class="card"><h2>${n}</h2><div class="grid3" style="margin-bottom:12px">${stat("Début", fr(f, dec))}${stat("Dernier relevé", fr(l, dec))}${stat("Évolution", (d > 0 ? "+" : d < 0 ? "−" : "") + fr(Math.abs(d), dec))}</div><div class="chart" id="c-${k}"></div><p class="note">${txt}</p></section>`; }).join(""), true);
   const marks = R.length <= 80 ? R.map(r => dayN(r.id)) : [];
   defs.forEach(([k, n, u, c, dec]) => { const a = T[k]; lineChart($("#c-" + k), { x: [first, ...a.map(p => dayN(p[0])), end], y: [null, ...a.map(p => p[1]), null], color: c, fmt: v => fr(v, dec), unit: u, xfmt: ax.xfmt, xticks: ax.ticks, marks, endDot: true, name: u, h: 140 }); });
 }
 
-/* ---------- accueil et import ---------- */
-const ERR = { NOT_ZIP: "Ce fichier n'est pas une archive zip lisible. Choisis le fichier export.zip créé par l'app Santé, sans le décompresser.", NO_EXPORT: "Cette archive ne contient pas de fichier d'export Santé. Vérifie que tu as bien choisi le fichier créé par « Exporter toutes les données de santé ».", NO_RUNS: "L'export a été lu, mais il ne contient aucune sortie de course à pied d'au moins 500 m.", OLD_BROWSER: "Ce navigateur est trop ancien pour lire l'archive. Mets à jour iOS (16.4 ou plus récent) ou ton navigateur, puis réessaie.", ZIP_METHOD: "Cette archive utilise un format de compression que le site ne sait pas lire." };
+/* ---------- import ---------- */
+const ERR = { NOT_ZIP: "Ce fichier n'est pas une archive zip lisible. Choisis le fichier export.zip créé par l'app Santé, sans le décompresser.", NO_EXPORT: "Cette archive ne contient pas de données d'export Santé. Vérifie que tu as bien choisi le fichier créé par « Exporter toutes les données de santé ».", OLD_BROWSER: "Ce navigateur est trop ancien pour lire l'archive. Mets à jour iOS (16.4 ou plus récent) ou ton navigateur, puis réessaie.", ZIP_METHOD: "Cette archive utilise un format de compression que le site ne sait pas lire." };
 function viewHome(err) {
-  $("#main").innerHTML = `<p class="lead">Dépose l'export de l'app Santé de ton iPhone et obtiens l'analyse de chacune de tes sorties de course : parcours, kilomètre par kilomètre, courbes, zones cardiaques, records et évolution de ta forme.</p>
+  head("Import · app Santé de l'iPhone", "Importer mon export");
+  M(`<p class="lead">Dépose l'export de l'app Santé de ton iPhone : le tableau de bord se remplit avec ton activité, ton cœur, ta mobilité, ta respiration et l'analyse de chacune de tes sorties de course. Tes repas, ton eau et tes mensurations se saisissent à la main.</p>
   ${err ? `<div class="err" role="alert">${err}</div>` : ""}
   <label class="drop" id="drop"><input type="file" id="file" accept=".zip,application/zip">
     <span class="btn">Choisir mon export.zip</span>
     <span class="note" style="margin:0">ou glisse le fichier ici. Il est lu sur ton appareil et n'est envoyé nulle part.</span></label>
-  <button class="link" id="b-demo" style="align-self:center">Voir un exemple sans importer</button>
-  ${DATA && !DEMO ? `<button class="link" id="b-backd" style="align-self:center">Revenir à mes sorties</button>` : ""}
+  <div class="pills" style="justify-content:center"><button class="link" data-act="demo">Voir un exemple fictif de course</button><button class="link" data-go="tableau">${DATA && !DEMO ? "Revenir au tableau de bord" : "Continuer sans export"}</button></div>
   <section class="card"><h2>Obtenir l'export</h2><ol class="steps">
     <li><span>Sur l'iPhone, ouvre l'app <b>Santé</b> et touche ta photo de profil, en haut à droite.</span></li>
     <li><span>Tout en bas, touche <b>Exporter toutes les données de santé</b>. La préparation peut prendre quelques minutes.</span></li>
     <li><span>Choisis <b>Enregistrer dans Fichiers</b>, puis reviens ici et sélectionne le fichier <b>export.zip</b>.</span></li></ol></section>
   <section class="card"><h2>Tes données restent chez toi</h2><ul class="read">
     <li>Le fichier est ouvert et analysé par ton navigateur. Le site ne reçoit rien et ne charge aucune ressource extérieure.</li>
-    <li>Le résultat est gardé sur cet appareil pour que tu le retrouves à ta prochaine visite. Le bouton « Effacer mes données » le supprime.</li>
-    <li>Seules les sorties de course à pied sont analysées. Les mesures sont les plus complètes avec une Apple Watch.</li></ul></section>`;
+    <li>Le résultat et tes saisies sont gardés sur cet appareil pour que tu les retrouves à ta prochaine visite. « Effacer mes données » les supprime.</li>
+    <li>Un nouvel import remplace les mesures de l'export précédent, sans toucher à tes saisies.</li></ul></section>`, true);
   const inp = $("#file"), drop = $("#drop");
   inp.onchange = () => inp.files[0] && runImport(inp.files[0]);
   ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
   ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
   drop.addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if (f) runImport(f); });
-  $("#b-demo").onclick = () => { setData(demoData(), true); go("resume"); };
-  const bb = $("#b-backd"); if (bb) bb.onclick = () => go("resume");
 }
 async function runImport(file) {
-  const names = ["", "Recherche des sorties de course", "Lecture des relevés pendant les sorties", "Calcul des séances"], base = [0, 0, .46, .92], wt = [0, .46, .46, .08];
-  $("#main").innerHTML = `<section class="card"><h2>Lecture de l'export</h2><p class="sub" id="p-lbl">Ouverture de l'archive</p><div class="prog" role="progressbar" aria-label="Avancement"><i id="p-bar"></i></div><p class="note">${fr(file.size / 1048576)} Mo. Garde cette page ouverte : un gros export peut demander une minute ou deux sur un téléphone.</p></section>`;
+  const names = ["", "Lecture des mesures", "Lecture des sorties de course", "Calcul"], base = [0, 0, .5, .94], wt = [0, .5, .44, .06];
+  M(`<section class="card"><h2>Lecture de l'export</h2><p class="sub" id="p-lbl">Ouverture de l'archive</p><div class="prog" role="progressbar" aria-label="Avancement"><i id="p-bar"></i></div><p class="note">${fr(file.size / 1048576)} Mo. Garde cette page ouverte : un gros export peut demander une minute ou deux sur un téléphone.</p></section>`, true);
   try {
     const d = await CORE.importZip(file, (s, p) => { const b = $("#p-bar"); if (!b) return; b.style.width = ((base[s] + wt[s] * p) * 100).toFixed(1) + "%"; $("#p-lbl").textContent = names[s] + " (étape " + s + " sur 3)"; });
-    setData(d, false); store.save(d); go("resume");
+    setData(d, false); store.save("data", d); go("tableau");
   } catch (e) { viewHome(ERR[e.message] || "La lecture a échoué. Le fichier est peut-être incomplet : refais un export depuis l'app Santé et réessaie."); }
 }
 
-/* ---------- exemple fictif ---------- */
+/* ---------- exemple fictif (course uniquement) ---------- */
 function demoData() {
-  let seed = 11; const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647, pad = n => String(n).padStart(2, "0");
-  const did = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()), zb = [133, 146, 159, 172], runs = [];
+  let seed = 11; const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647, zb = [133, 146, 159, 172], runs = [];
   [[58, 4.2, 372], [52, 5, 366], [47, 5.1, 362], [41, 6.3, 368], [36, 5, 353], [30, 7.2, 360], [24, 5.2, 347], [17, 8.1, 354], [11, 5, 340], [6, 10, 351], [2, 6, 344]].forEach(([ago, dist, pc], n) => {
     const d = new Date(); d.setDate(d.getDate() - ago); d.setHours(18, 5 + n * 4, 0, 0);
     const total = Math.round(dist * pc), S = { t: [], km: [], pace: [], hr: [], power: [], ele: [] }; let k = 0;
@@ -690,42 +1018,91 @@ function demoData() {
     const rad = dist * 1000 / 6.283, route = S.t.map((s, i) => { const f = S.km[i] / dist, a = f * 6.283, rr = rad * (1 + .18 * Math.sin(a * 3 + n) + .08 * Math.sin(a * 7)); return [Math.round(rr * Math.sin(a)), Math.round(rr * (1 - Math.cos(a)) * .7), +(3600 / S.pace[i]).toFixed(1), S.km[i]]; });
     const zones = [0, 0, 0, 0, 0]; S.hr.forEach(h => zones[zb.filter(b => h >= b).length] += 10);
     const hrAvg = avg(S.hr, 0, total + 1), full = splits.filter(s => s.dist >= .99).sort((a, b) => a.pace - b.pace)[0];
-    runs.push({ id: did(d), t0: Math.round(d / 1000), start: pad(d.getHours()) + ":" + pad(d.getMinutes()), source: "Exemple", dist, dur: total, pace: Math.round(total / dist), hrAvg, hrMax: Math.max(...S.hr), kcal: Math.round(dist * 68), elev: Math.round(18 + dist * 3), power: avg(S.power, 0, total + 1), stride: 1.12 + n * .006, gct: 262 - n, vo: 9.4, cad: 164 + (n % 4), zb, zones, zonesApple: false, splits, series: S, route, best1k: { time: full.pace - 6, at: full.km - 1 + .3 }, best5k: dist >= 5 ? Math.round(pc * 5 - 30) : null, eff: +(dist * 1000 / (total / 60) / hrAvg).toFixed(3), decoupling: +(2 + rnd() * 5).toFixed(1), hrFirst: 2, paused: false });
+    runs.push({ id: did(d), t0: Math.round(d / 1000), start: p2(d.getHours()) + ":" + p2(d.getMinutes()), source: "Exemple", dist, dur: total, pace: Math.round(total / dist), hrAvg, hrMax: Math.max(...S.hr), kcal: Math.round(dist * 68), elev: Math.round(18 + dist * 3), power: avg(S.power, 0, total + 1), stride: 1.12 + n * .006, gct: 262 - n, vo: 9.4, cad: 164 + (n % 4), zb, zones, zonesApple: false, splits, series: S, route, best1k: { time: full.pace - 6, at: full.km - 1 + .3 }, best5k: dist >= 5 ? Math.round(pc * 5 - 30) : null, eff: +(dist * 1000 / (total / 60) / hrAvg).toFixed(3), decoupling: +(2 + rnd() * 5).toFixed(1), hrFirst: 2, paused: false });
   });
   const tr = (from, to, noise, every) => { const a = []; for (let ago = 280; ago >= 0; ago -= every) { const d = new Date(); d.setDate(d.getDate() - ago); const f = 1 - ago / 280; a.push([did(d), +(from + (to - from) * f + (rnd() - .5) * noise).toFixed(1)]); } return a; };
-  return { exported: did(new Date()), runs, trend: { vo2: tr(41.5, 46.2, .8, 6), rhr: tr(63, 56, 3, 7), hrv: tr(46, 58, 9, 7) } };
+  return { exported: today(), runs, trend: { vo2: tr(41.5, 46.2, .8, 6), rhr: tr(63, 56, 3, 7), hrv: tr(46, 58, 9, 7) } };
 }
 
 /* ---------- conservation sur l'appareil ---------- */
 const store = (() => {
   const open = () => new Promise((ok, ko) => { const r = indexedDB.open("carnet-de-course", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); });
   const tx = async (mode, fn) => { const db = await open(); return new Promise((ok, ko) => { const t = db.transaction("kv", mode), rq = fn(t.objectStore("kv")); t.oncomplete = () => ok(rq.result); t.onerror = () => ko(t.error); }); };
-  return { save: d => tx("readwrite", s => s.put(d, "data")).catch(() => {}), load: () => tx("readonly", s => s.get("data")).catch(() => null), clear: () => tx("readwrite", s => s.delete("data")).catch(() => {}) };
+  return { save: (k, d) => tx("readwrite", s => s.put(d, k)).catch(() => {}), load: k => tx("readonly", s => s.get(k)).catch(() => null), clear: k => tx("readwrite", s => s.delete(k)).catch(() => {}) };
 })();
+const saveMan = () => { bump(); store.save("manual", MAN); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+/* ---------- actions ---------- */
+const say = (id, t) => { const e = $(id); if (e) e.textContent = t; };
+function addWater(ml) { const n = new Date(); MAN.water.push({ id: uid(), day: nutDay || today(), ml, t: p2(n.getHours()) + ":" + p2(n.getMinutes()) }); saveMan(); render(true); }
+const A = {
+  period: d => { per = d.p; try { localStorage.setItem("per", per); } catch (e) {} render(true); },
+  more: () => { shown += 40; render(true); },
+  demo: () => { setData(demoData(), true); go("resume"); },
+  "nut-day": d => { const n = addDays(nutDay || today(), +d.d); nutDay = n > today() ? today() : n; editId = null; render(true); },
+  "nut-open": d => { nutDay = d.day; editId = null; render(); window.scrollTo(0, 0); },
+  "food-save": () => { const name = $("#fd-name").value.trim(), kcal = nval($("#fd-kcal").value); if (!name) return say("#fd-msg", "Indique le nom de l'aliment."); if (kcal == null || kcal < 0 || kcal > 20000) return say("#fd-msg", "Indique les calories de cet aliment, en kcal.");
+    const f = { meal: $("#fd-meal").value, name: name.slice(0, 80), qty: $("#fd-qty").value.trim().slice(0, 40), kcal: Math.round(kcal) };
+    if (editId) Object.assign(MAN.foods.find(x => x.id == editId) || {}, f); else MAN.foods.push({ id: uid(), day: nutDay || today(), ...f }); editId = null; saveMan(); render(true); },
+  "food-edit": d => { editId = d.id; render(true); const e = $("#fd-name"); if (e) e.focus(); },
+  "food-cancel": () => { editId = null; render(true); },
+  "food-del": d => { MAN.foods = MAN.foods.filter(x => x.id != d.id); if (editId == d.id) editId = null; saveMan(); render(true); },
+  "water-add": d => addWater(+d.ml),
+  "water-custom": () => { const v = nval($("#wt-ml").value); if (v == null || v <= 0 || v > 5000) return; addWater(Math.round(v)); },
+  "water-del": d => { MAN.water = MAN.water.filter(x => x.id != d.id); saveMan(); render(true); },
+  "goal-set": () => { const v = nval($("#wt-goal").value); if (v == null || v < 250 || v > 10000) return; MAN.goal = Math.round(v); saveMan(); render(true); },
+  "measure-add": () => { const key = $("#ms-key").value, v = nval($("#ms-v").value), day = $("#ms-day").value || today(), lim = { weight: [20, 400], fat: [2, 75], lean: [15, 200], height: [80, 250] }[key] || [10, 250];
+    if (v == null || v < lim[0] || v > lim[1]) return say("#ms-msg", `Indique une valeur entre ${lim[0]} et ${lim[1]} ${MDEF[key].unit}.`);
+    const dd = day > today() ? today() : day; MAN.measures = MAN.measures.filter(x => !(x.key == key && x.day == dd)); MAN.measures.push({ id: uid(), key, day: dd, v }); saveMan(); render(true); },
+  "measure-del": d => { MAN.measures = MAN.measures.filter(x => x.id != d.id); saveMan(); render(true); },
+  clear: async () => { if (!armed) { armed = true; return foot(); } armed = false; await store.clear("data"); await store.clear("manual"); MAN = { foods: [], water: [], measures: [], goal: 2000 }; setData(null); go("accueil"); },
+  "clear-no": () => { armed = false; foot(); }
+};
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-act]"); if (a) { e.preventDefault(); if (A[a.dataset.act] && !a.disabled) A[a.dataset.act](a.dataset); return; }
+  const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); go(g.dataset.go); }
+});
 
 /* ---------- navigation ---------- */
-function setData(d, demo) {
-  DATA = d; DEMO = !!demo; R = d ? d.runs : []; last = R[R.length - 1] || null; prev = R[R.length - 2] || null; shown = 40;
-  $("nav.tabs").hidden = !d;
-  const y = id => id.slice(0, 4);
-  $("#period").textContent = d ? (R.length > 1 ? dShort(R[0].id) + (y(R[0].id) != y(last.id) ? " " + y(R[0].id) : "") + " – " : "") + dShort(last.id) + " " + y(last.id) : "";
-  $("#acts").innerHTML = d ? `<button class="link" id="a-imp">${DEMO ? "Importer mon export" : "Importer un nouvel export"}</button>${DEMO ? "" : `<button class="link" id="a-clr">Effacer mes données</button>`}` : "";
-  if (d) { $("#a-imp").onclick = () => go("accueil"); const c = $("#a-clr"); if (c) c.onclick = async () => { await store.clear(); setData(null); go("accueil"); }; }
+function head(eyebrow, title) {
+  $("#eyebrow").textContent = eyebrow; $("#title").textContent = title;
+  $("#pills").innerHTML = (DEMO ? `<span class="pill off"><i></i>Exemple fictif</span>` : DATA ? `<span class="pill"><i></i>Export du ${dShortY(DATA.exported)}</span>` : `<span class="pill off"><i></i>Aucun export importé</span>`) + `<button class="btn" data-go="accueil">${DATA && !DEMO ? "Importer un nouvel export" : "Importer un export"}</button>`;
 }
-function render() {
-  let h = location.hash.slice(1) || (DATA ? "resume" : "accueil");
-  const run = DATA && h.startsWith("seance-") ? R.find(r => r.id == h.slice(7)) : null;
-  if (!DATA || (!run && !["resume", "seances", "forme"].includes(h))) h = DATA && h != "accueil" ? "resume" : "accueil";
-  const tab = run ? "seances" : h;
-  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.view == tab));
-  h == "accueil" ? viewHome() : run ? viewRun(run) : h == "seances" ? viewSeances() : h == "forme" ? viewForme() : viewResume();
+function foot() {
+  const has = (DATA && !DEMO) || MAN.foods.length || MAN.water.length || MAN.measures.length;
+  $("#acts").innerHTML = has ? (armed ? `<span>Effacer de cet appareil l'export importé et toutes tes saisies ?</span><button class="link" data-act="clear">Oui, tout effacer</button><button class="link" data-act="clear-no">Annuler</button>` : `<button class="link" data-act="clear">Effacer mes données</button>`) : "";
+}
+function setData(d, demo) {
+  DATA = d; DEMO = !!demo; R = d && d.runs ? d.runs : []; last = R[R.length - 1] || null; prev = R[R.length - 2] || null; shown = 40; bump();
+  const n = DATA && DATA.days ? Object.keys(DATA.days).length : 0;
+  $("#sidecard").innerHTML = DEMO ? `Exemple fictif<b>${R.length} sorties</b>inventées, pour découvrir la partie course.` : DATA ? `Export importé<b>${dShortY(DATA.exported)}</b>${n} mesure${n > 1 ? "s" : ""} de santé · ${R.length} sortie${R.length > 1 ? "s" : ""} de course` : `Aucun export<b>–</b>Importe l'export de l'app Santé pour remplir les mesures.`;
+  foot();
+}
+const VIEWS = ["tableau", "accueil", "resume", "seances", "forme", ...CATS.map(c => c.id)];
+function render(keep) {
+  let h = location.hash.slice(1);
+  const run = h.startsWith("seance-") ? R.find(r => r.id == h.slice(7)) : null, met = h.startsWith("m-") && MDEF[h.slice(2)] ? h.slice(2) : null;
+  if (!run && !met && !VIEWS.includes(h)) h = DATA || MAN.foods.length || MAN.water.length || MAN.measures.length ? "tableau" : "accueil";
+  const cur = run || ["resume", "seances", "forme"].includes(h) ? "resume" : met ? MDEF[met].cat : h;
+  const item = (go_, c, name) => `<button data-go="${go_}" style="--c:${c}" ${cur == go_ ? 'aria-current="page"' : ""}><i></i>${name}</button>`;
+  $("#nav").innerHTML = item("tableau", "var(--acc)", "Tableau de bord") + CATS.map(c => item(c.id, `var(--c-${c.id})`, c.name)).join("") + item("resume", "var(--c-course)", "Course") + "<hr>" + item("accueil", "var(--ink3)", "Importer");
+  const y = keep ? window.scrollY : 0;
+  h == "accueil" ? viewHome() : run ? viewRun(run) : met ? viewMetric(met) : h == "tableau" ? viewTableau() : h == "seances" ? viewSeances() : h == "forme" ? viewForme() : h == "resume" ? viewResume() : viewCat(CAT[h]);
+  foot();
+  if (keep) window.scrollTo(0, y);
+  else { const act = $('#nav [aria-current="page"]'); if (act && innerWidth <= 860) $(".side").scrollLeft = Math.max(0, act.offsetLeft - 60); }
 }
 function go(h) { if (location.hash.slice(1) == h) render(); else location.hash = h; window.scrollTo(0, 0); }
-document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => go(b.dataset.view));
-addEventListener("hashchange", render);
-let rt, lw = innerWidth; addEventListener("resize", () => { if (innerWidth == lw) return; lw = innerWidth; clearTimeout(rt); rt = setTimeout(() => { if (!$("#p-bar")) render(); }, 150); });
-render();
-store.load().then(d => { if (d && d.runs && d.runs.length && !DATA) { setData(d, false); render(); } });
+addEventListener("hashchange", () => render());
+let rt, lw = innerWidth; addEventListener("resize", () => { if (innerWidth == lw) return; lw = innerWidth; clearTimeout(rt); rt = setTimeout(() => { if (!$("#p-bar")) render(true); }, 150); });
+try { const p = localStorage.getItem("per"); if (PER.some(x => x[0] == p)) per = p; } catch (e) {}
+setData(null); render();
+Promise.all([store.load("data"), store.load("manual")]).then(([d, m]) => {
+  if (m && m.foods) MAN = Object.assign({ foods: [], water: [], measures: [], goal: 2000 }, m);
+  if (d && d.runs && !DATA) setData(d, false); else bump();
+  if ((d || m) && !$("#p-bar")) render();
+});
 </script>
 </body>
 </html>

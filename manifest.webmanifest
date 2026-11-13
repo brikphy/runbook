@@ -1,10 +1,10 @@
 {
- "name": "Carnet de course",
- "short_name": "Carnet",
+ "name": "Runbook",
+ "short_name": "Runbook",
  "start_url": "./",
  "display": "standalone",
- "background_color": "#0f161d",
- "theme_color": "#0f161d",
+ "background_color": "#070b14",
+ "theme_color": "#070b14",
  "lang": "fr",
  "icons": [
   {
